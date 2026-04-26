@@ -79,7 +79,9 @@ export default function Sidebar({ menuOpen, setMenuOpen }: MenuProps) {
   return (
     <aside
       id='logo-sidebar'
-      className={`bg-base-dark border-background fixed left-0 z-40 h-screen w-64 -translate-x-full border-r pt-20 transition-transform ${menuOpen ? 'translate-x-0' : ''}`}
+      className={`bg-base-dark border-background fixed left-0 z-40 h-screen w-64 -translate-x-full border-r pt-20 transition-transform ${
+        menuOpen ? 'translate-x-0' : ''
+      }`}
       aria-label='Sidebar'
     >
       <nav className='bg-base-dark h-full space-y-8 overflow-y-auto px-3 pb-4'>
