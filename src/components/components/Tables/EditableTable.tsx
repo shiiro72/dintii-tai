@@ -135,7 +135,13 @@ export default function EditableTable(props: SpecificTableProps) {
     });
 
     if (newData && newData?.length) {
-      setTableData([...(tableData ?? []), ...(newData ?? [])]);
+      setTableData((prevData) => {
+        const existingIds = new Set(prevData.map((item) => item.id));
+        const filteredNewData = newData.filter(
+          (item) => !existingIds.has(item.id)
+        );
+        return [...prevData, ...filteredNewData];
+      });
     } else {
       setMoreDataToLoad(false);
     }
