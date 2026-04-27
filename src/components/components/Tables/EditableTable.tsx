@@ -103,11 +103,11 @@ export default function EditableTable(props: SpecificTableProps) {
   const [rangeStart, setRangeStart] = useState(ROWS_TO_LOAD);
   const [moreDataToLoad, setMoreDataToLoad] = useState(true);
 
-  useMemo(() => {
+  useEffect(() => {
     setTableData(data ?? []);
     setRangeStart(ROWS_TO_LOAD);
 
-    if (tableData.length <= ROWS_TO_LOAD - 1) {
+    if ((data?.length ?? 0) <= ROWS_TO_LOAD - 1) {
       setMoreDataToLoad(false);
     } else {
       setMoreDataToLoad(true);
@@ -135,7 +135,13 @@ export default function EditableTable(props: SpecificTableProps) {
     });
 
     if (newData && newData?.length) {
-      setTableData([...(tableData ?? []), ...(newData ?? [])]);
+      setTableData((prevData) => {
+        const existingIds = new Set(prevData.map((item) => item.id));
+        const filteredNewData = newData.filter(
+          (item) => !existingIds.has(item.id)
+        );
+        return [...prevData, ...filteredNewData];
+      });
     } else {
       setMoreDataToLoad(false);
     }

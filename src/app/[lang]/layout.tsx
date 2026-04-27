@@ -3,17 +3,7 @@ import '@/app/globals.css';
 import { Metadata } from 'next';
 import { Providers } from '@/components/providers/providers';
 import { sanityFetch } from '@/sanity/lib/live';
-import {
-  DICTIONARY_EDIT_QUERY,
-  DICTIONARY_FEEDBACK_QUERY,
-  DICTIONARY_FORM_QUERY,
-  DICTIONARY_GENERAL_QUERY,
-  DICTIONARY_NAVIGATION_QUERY,
-  DICTIONARY_PATIENT_QUERY,
-  DICTIONARY_TODO_QUERY,
-  DICTIONARY_TREATMENT_QUERY,
-  SITEINFO_QUERY,
-} from '@/sanity/lib/queries';
+import { FULL_DICTIONARY_QUERY, SITEINFO_QUERY } from '@/sanity/lib/queries';
 import { DICTIONARY_QUERYResult } from '@/types/GeneralTypes';
 import { urlFor } from '@/sanity/lib/image';
 import SchemaScript from '@/components/molecules/SchemaScript';
@@ -106,56 +96,20 @@ export default async function RootLayout({
 export async function getDictionaryEntries(
   lang: string
 ): Promise<DICTIONARY_QUERYResult> {
-  const [
-    { data: dictionaryNavigation },
-    { data: dictionaryGeneral },
-    { data: dictionaryEdit },
-    { data: dictionaryPatient },
-    { data: dictionaryTreatment },
-    { data: dictionaryFeedback },
-    { data: dictionaryForm },
-    { data: dictionaryTodo },
-  ] = await Promise.all([
-    sanityFetch({
-      query: DICTIONARY_NAVIGATION_QUERY,
-      params: { language: lang },
-    }),
-    sanityFetch({
-      query: DICTIONARY_GENERAL_QUERY,
-      params: { language: lang },
-    }),
-    sanityFetch({ query: DICTIONARY_EDIT_QUERY, params: { language: lang } }),
-    sanityFetch({
-      query: DICTIONARY_PATIENT_QUERY,
-      params: { language: lang },
-    }),
-    sanityFetch({
-      query: DICTIONARY_TREATMENT_QUERY,
-      params: { language: lang },
-    }),
-    sanityFetch({
-      query: DICTIONARY_FEEDBACK_QUERY,
-      params: { language: lang },
-    }),
-    sanityFetch({
-      query: DICTIONARY_FORM_QUERY,
-      params: { language: lang },
-    }),
-    sanityFetch({
-      query: DICTIONARY_TODO_QUERY,
-      params: { language: lang },
-    }),
-  ]);
+  const { data } = await sanityFetch({
+    query: FULL_DICTIONARY_QUERY,
+    params: { language: lang },
+  });
 
   const mergedEntries = {
-    ...dictionaryGeneral,
-    ...dictionaryNavigation,
-    ...dictionaryEdit,
-    ...dictionaryPatient,
-    ...dictionaryTreatment,
-    ...dictionaryFeedback,
-    ...dictionaryForm,
-    ...dictionaryTodo,
+    ...data?.general,
+    ...data?.navigation,
+    ...data?.edit,
+    ...data?.patient,
+    ...data?.treatment,
+    ...data?.feedback,
+    ...data?.form,
+    ...data?.todo,
   };
 
   const dictionaryEntries: DICTIONARY_QUERYResult = Object.fromEntries(
