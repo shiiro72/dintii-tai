@@ -11,6 +11,8 @@ export default function DashboardClientWrapper({
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
+    // On desktop, we want it open by default.
+    // On touch devices, it should be closed by default.
     if (!isTouchDevice()) {
       setMenuOpen(true);
     }
@@ -22,7 +24,9 @@ export default function DashboardClientWrapper({
       <div className='flex flex-1 flex-col'>
         <DashboardHeader menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         <div
-          className={`transition-all duration-300 ${menuOpen ? 'md:ml-64' : 'md:ml-0'}`}
+          className={`transition-all duration-300 ${
+            menuOpen ? 'md:ml-64' : 'ml-0'
+          }`}
         >
           {children}
         </div>

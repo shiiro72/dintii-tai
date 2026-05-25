@@ -59,6 +59,7 @@ export function Link({
       onClick={onClick}
       href={href}
       target={target}
+      prefetch={true}
     >
       {linkContent}
       {children}
