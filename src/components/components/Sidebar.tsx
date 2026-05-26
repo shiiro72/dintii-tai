@@ -8,6 +8,7 @@ import {
 import { useState } from 'react';
 import { signOut } from '@/supabase/actions/userActions';
 import {
+  APPOINTMENTS_PATH,
   DASHBOARD_PATH,
   NEW_USER_PATH,
   PATIENTS_PATH,
@@ -31,6 +32,7 @@ export default function Sidebar({ menuOpen, setMenuOpen }: MenuProps) {
     studio,
     logout,
     todoHeadline,
+    appointmentsLink,
   } = dictionary || defaultDictionaryEntries;
 
   const menuLinks = [
@@ -53,6 +55,11 @@ export default function Sidebar({ menuOpen, setMenuOpen }: MenuProps) {
       name: todoHeadline || 'To-Do List',
       href: TODOS_PATH,
       icon: 'check_box',
+    },
+    {
+      name: appointmentsLink || 'Appointments',
+      href: APPOINTMENTS_PATH,
+      icon: 'calendar_month',
     },
   ];
   const generalLinks = [

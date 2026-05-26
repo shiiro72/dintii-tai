@@ -28,6 +28,10 @@ export const dictionaryNavigationType = defineType({
       type: 'internationalizedArrayString',
     }),
     defineField({
+      name: 'appointments',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
       name: 'general',
       type: 'internationalizedArrayString',
     }),

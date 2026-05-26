@@ -45,7 +45,21 @@ export type DICTIONARY_QUERYResult = NonNullable<DICTIONARY_EDIT_QUERYResult> &
   NonNullable<DICTIONARY_TREATMENT_QUERYResult> &
   NonNullable<DICTIONARY_FEEDBACK_QUERYResult> &
   NonNullable<DICTIONARY_FORM_QUERYResult> &
-  NonNullable<DICTIONARY_TODO_QUERYResult>;
+  NonNullable<DICTIONARY_TODO_QUERYResult> &
+  {
+    appointments?: {
+      appointmentsHeadline: string | null;
+      goToCalendar: string | null;
+      selectPatient: string | null;
+      startTime: string | null;
+      endTime: string | null;
+      addAppointment: string | null;
+      editAppointment: string | null;
+      deleteAppointment: string | null;
+      deleteAppointmentMessage: string | null;
+    } | null;
+    appointmentsLink?: string | null;
+  };
 
 export type SupabaseArray = { [key: string]: string }[] | [] | null;
 

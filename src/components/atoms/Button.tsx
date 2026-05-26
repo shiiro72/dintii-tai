@@ -9,6 +9,7 @@ export type ButtonProps = Partial<GoogleIconProps> & {
   type?: 'button' | 'submit' | 'reset';
   iconPlacement?: 'left' | 'right';
   formAction?: (formData: FormData) => Promise<void>;
+  disabled?: boolean;
 };
 
 export function Button({
@@ -21,6 +22,7 @@ export function Button({
   asLink,
   formAction,
   type,
+  disabled,
   iconPlacement = 'left',
 }: ButtonProps) {
   const buttonClasses = `flex items-center cursor-pointer ${
@@ -55,10 +57,11 @@ export function Button({
     </a>
   ) : (
     <button
-      className={buttonClasses}
+      className={`${buttonClasses} ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
       onClick={onClick}
       formAction={formAction}
       type={type}
+      disabled={disabled}
     >
       {buttonContent}
     </button>

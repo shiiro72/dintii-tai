@@ -248,15 +248,25 @@ export default function EditableTable(props: SpecificTableProps) {
                             sortDataByHeader(header, newSortOrder);
                           }}
                           label={
-                            t?.[
+                            (typeof t?.[
                               convertSnakeToCamelCase(header) as keyof typeof t
-                            ] ?? header
+                            ] === 'string'
+                              ? (t?.[
+                                  convertSnakeToCamelCase(
+                                    header
+                                  ) as keyof typeof t
+                                ] as string)
+                              : null) ?? header
                           }
                         />
                       ) : (
-                        (t?.[
+                        (typeof t?.[
                           convertSnakeToCamelCase(header) as keyof typeof t
-                        ] ?? header)
+                        ] === 'string'
+                          ? (t?.[
+                              convertSnakeToCamelCase(header) as keyof typeof t
+                            ] as string)
+                          : null) ?? header
                       )}
                     </th>
                   ))}
@@ -321,11 +331,17 @@ export default function EditableTable(props: SpecificTableProps) {
                               />
                             ) : useHeaderTranslationForRows.includes(header) &&
                               entry[header] != undefined ? (
-                              (t?.[
+                              (typeof t?.[
                                 convertSnakeToCamelCase(
                                   header
                                 ) as keyof typeof t
-                              ] ?? header)
+                              ] === 'string'
+                                ? (t?.[
+                                    convertSnakeToCamelCase(
+                                      header
+                                    ) as keyof typeof t
+                                  ] as string)
+                                : null) ?? header
                             ) : (
                               entry[header]
                             )}
@@ -341,7 +357,8 @@ export default function EditableTable(props: SpecificTableProps) {
                                 label=''
                                 addMessage={addMessage || ''}
                                 editMessage={
-                                  t[editMessage as keyof typeof t] ?? ''
+                                  (t[editMessage as keyof typeof t] as string) ??
+                                  ''
                                 }
                                 buttonAddIconName={buttonAddIconName || ''}
                               />
@@ -359,7 +376,9 @@ export default function EditableTable(props: SpecificTableProps) {
                                 className='!text-red-700 hover:!text-red-500'
                                 asLink
                                 dialogHeadline={
-                                  t[deleteMessage as keyof typeof t] ?? ''
+                                  (t[
+                                    deleteMessage as keyof typeof t
+                                  ] as string) ?? ''
                                 }
                               />
                             ) : undefined}
