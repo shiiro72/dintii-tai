@@ -14,6 +14,8 @@ export type InputProps = PropsWithChildren & {
   autoComplete?: string;
   pattern?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   ref?: Ref<HTMLInputElement>;
 };
 

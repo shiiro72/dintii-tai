@@ -10,6 +10,7 @@ export type ButtonProps = Partial<GoogleIconProps> & {
   iconPlacement?: 'left' | 'right';
   formAction?: (formData: FormData) => Promise<void>;
   disabled?: boolean;
+  target?: string;
 };
 
 export function Button({
@@ -23,6 +24,7 @@ export function Button({
   formAction,
   type,
   disabled,
+  target,
   iconPlacement = 'left',
 }: ButtonProps) {
   const buttonClasses = `flex items-center cursor-pointer ${
@@ -52,7 +54,13 @@ export function Button({
   );
 
   return href ? (
-    <a href={href} className={buttonClasses} onClick={onClick}>
+    <a
+      href={href}
+      className={buttonClasses}
+      onClick={onClick}
+      target={target}
+      rel={target === '_blank' ? 'noopener noreferrer' : undefined}
+    >
       {buttonContent}
     </a>
   ) : (

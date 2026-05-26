@@ -9,6 +9,7 @@ import { Button } from '@/components/atoms/Button';
 import AppointmentModal from '../Modals/AppointmentModal';
 import { deleteAppointment } from '@/supabase/actions/appointmentActions';
 import DeleteButton from '@/components/molecules/DeleteButton';
+import { getWhatsAppLink } from '@/helpers';
 
 dayjs.extend(isoWeek);
 
@@ -43,7 +44,7 @@ export default function AppointmentCalendar({
   }[];
 }) {
   const t = useDictionary();
-  const { handleClick, showFeedback } = useDialog();
+  const { handleClick, closeDialog, showFeedback } = useDialog();
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [viewMode, setViewMode] = useState<ViewMode>('week');
 
@@ -64,11 +65,35 @@ export default function AppointmentCalendar({
   const handleSlotClick = (date: dayjs.Dayjs, hour: number) => {
     const selectedDate = date.hour(hour).minute(0).second(0).toDate();
     handleClick(
-      <AppointmentModal
-        patients={patients}
-        selectedDate={selectedDate}
-      />,
+      <AppointmentModal patients={patients} selectedDate={selectedDate} />,
       t.appointments?.addAppointment || 'Add Appointment'
+    );
+  };
+
+  const handlePhoneClick = (phone: string) => {
+    handleClick(
+      <div className="flex flex-col gap-y-4 p-4">
+        <Button
+          label={`Call ${phone}`}
+          iconName="call"
+          href={`tel:${phone}`}
+          className="w-full rounded-full"
+        />
+        <Button
+          label="WhatsApp Message"
+          iconName="chat"
+          href={getWhatsAppLink(phone)}
+          target="_blank"
+          className="w-full rounded-full"
+        />
+        <Button
+          label={t.cancel || 'Cancel'}
+          onClick={closeDialog}
+          className="w-full rounded-full"
+          iconName="cancel"
+        />
+      </div>,
+      'Phone Actions'
     );
   };
 
@@ -114,8 +139,11 @@ export default function AppointmentCalendar({
             ))}
           </div>
           <div
-            className="absolute inset-0 opacity-0 hover:opacity-10 cursor-pointer bg-blue-500 -z-0"
-            onClick={() => handleSlotClick(day, 8)}
+            className="absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10"
+            onClick={() => {
+              setCurrentDate(day);
+              setViewMode('day');
+            }}
           />
         </div>
       ))}
@@ -193,7 +221,18 @@ export default function AppointmentCalendar({
                              />
                           </div>
                         </div>
-                        <div className="text-[10px]">{app.phone_number}</div>
+                        {app.phone_number && (
+                          <div
+                            className="cursor-pointer text-[10px] hover:underline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (app.phone_number)
+                                handlePhoneClick(app.phone_number);
+                            }}
+                          >
+                            {app.phone_number}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -237,9 +276,22 @@ export default function AppointmentCalendar({
                        >
                          <div>
                             <span className="font-bold">{dayjs(app.start_time).format('HH:mm')} - {dayjs(app.end_time).format('HH:mm')}</span>
-                            <span className="ml-3 font-semibold">{app.patient?.first_name} {app.patient?.last_name}</span>
-                            <span className="ml-3 text-xs italic">{app.phone_number}</span>
-                         </div>
+                            <span className="ml-3 font-semibold">
+                              {app.patient?.first_name} {app.patient?.last_name}
+                            </span>
+                            {app.phone_number && (
+                              <span
+                                className="ml-3 cursor-pointer text-xs italic hover:underline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (app.phone_number)
+                                    handlePhoneClick(app.phone_number);
+                                }}
+                              >
+                                {app.phone_number}
+                              </span>
+                            )}
+                          </div>
                          <div className="flex gap-2">
                              <Button iconName="edit" asLink onClick={() => handleEditAppointment(app)} />
                              <DeleteButton
@@ -274,11 +326,11 @@ export default function AppointmentCalendar({
           </div>
         </div>
         <div className="flex bg-gray-100 rounded-lg p-1">
-          {(['month', 'week', 'day'] as ViewMode[]).map(mode => (
+          {(['month', 'week', 'day'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-1 rounded-md text-sm transition-all ${viewMode === mode ? 'bg-white shadow text-base-dark font-bold' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`cursor-pointer px-4 py-1 rounded-md text-sm transition-all ${viewMode === mode ? 'bg-white shadow text-base-dark font-bold' : 'text-gray-500 hover:text-gray-700'}`}
             >
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
             </button>
