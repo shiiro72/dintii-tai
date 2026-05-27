@@ -72,6 +72,18 @@ export const defaultDictionaryEntries: DICTIONARY_QUERYResult = {
   deleteTODOItemMessage:
     'Are you sure you want to delete "{entry}" to-do item?',
   treatments: 'Treatments',
+  appointments: {
+    appointmentsHeadline: 'Upcoming Appointments',
+    goToCalendar: 'Go to calendar',
+    selectPatient: 'Select Patient',
+    startTime: 'Start Time',
+    endTime: 'End Time',
+    addAppointment: 'Add Appointment',
+    editAppointment: 'Edit Appointment',
+    deleteAppointment: 'Delete Appointment',
+    deleteAppointmentMessage: 'Are you sure you want to delete this appointment?',
+  },
+  appointmentsLink: 'Appointments',
 };
 
 export const DictionaryContext = createContext<DICTIONARY_QUERYResult | null>(

@@ -110,6 +110,8 @@ export async function getDictionaryEntries(
     ...data?.feedback,
     ...data?.form,
     ...data?.todo,
+    appointments: data?.appointments,
+    appointmentsLink: data?.navigation?.appointmentsLink,
   };
 
   const dictionaryEntries: DICTIONARY_QUERYResult = Object.fromEntries(
