@@ -111,6 +111,9 @@ export default function AppointmentModal({
 
   async function handleSubmit(formData: FormData) {
     try {
+      formData.set('startTime', dayjs(startTime).toISOString());
+      formData.set('endTime', dayjs(endTime).toISOString());
+
       if (appointment) {
         formData.append('id', appointment.id.toString());
         await editAppointment(formData);
@@ -149,18 +152,16 @@ export default function AppointmentModal({
 
   return (
     <div className="flex flex-col gap-y-4">
-      {!selectedPatientId && (
-        <EditPatientForm
-          formFunctionality="add"
-          formAction={addPatient}
-          formFields={[
-            { label: t.firstName, element: 'firstName', required: true },
-            { label: t.lastName, element: 'lastName', required: true },
-            { label: t.phone, element: 'phone', required: true },
-          ]}
-          className="w-full"
-        />
-      )}
+      <EditPatientForm
+        formFunctionality="add"
+        formAction={addPatient}
+        formFields={[
+          { label: t.firstName, element: 'firstName', required: true },
+          { label: t.lastName, element: 'lastName', required: true },
+          { label: t.phone, element: 'phone', required: true },
+        ]}
+        className="w-full"
+      />
 
       <form action={handleSubmit} className="flex flex-col gap-y-4">
         <div className="relative">
