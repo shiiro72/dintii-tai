@@ -166,17 +166,30 @@ export default function AppointmentModal({
       <form action={handleSubmit} className="flex flex-col gap-y-4">
         <div className="relative">
           <Input
-            label={t.search + ' ' + t.patients}
+            label={selectedPatientId ? t.patients : t.search + ' ' + t.patients}
             element="patientSearch"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
+              setSelectedPatientId(null);
               setShowOptions(true);
             }}
             onFocus={() => setShowOptions(true)}
             onBlur={() => setTimeout(() => setShowOptions(false), 200)}
             autoComplete="off"
-          />
+          >
+            {selectedPatientId && (
+              <Button
+                iconName="close"
+                asLink
+                onClick={() => {
+                  setSelectedPatientId(null);
+                  setSearchTerm('');
+                }}
+                className="absolute right-2 top-3"
+              />
+            )}
+          </Input>
           {showOptions && filteredPatients.length > 0 && !selectedPatientId && (
             <ul className="absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
               {filteredPatients.map((p) => (
@@ -195,23 +208,6 @@ export default function AppointmentModal({
             </ul>
           )}
         </div>
-
-        {selectedPatientId && (
-          <div className="bg-gray-100 p-2 rounded text-black flex justify-between items-center">
-            <span>
-              {patients.find((p) => p.id === selectedPatientId)?.first_name}{' '}
-              {patients.find((p) => p.id === selectedPatientId)?.last_name}
-            </span>
-            <Button
-              iconName="close"
-              asLink
-              onClick={() => {
-                setSelectedPatientId(null);
-                setSearchTerm('');
-              }}
-            />
-          </div>
-        )}
         <input type="hidden" name="patientId" value={selectedPatientId || ''} />
 
         <Input

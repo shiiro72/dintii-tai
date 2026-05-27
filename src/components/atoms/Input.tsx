@@ -53,7 +53,7 @@ export function Input(props: InputProps) {
         required={required}
         autoComplete={autoComplete ?? 'off'}
         readOnly={readOnly}
-        defaultValue={value}
+        value={value}
         {...rest}
         {...(isCheckbox && Boolean(value) === true
           ? { defaultChecked: true }
