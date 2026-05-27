@@ -28,6 +28,7 @@ type AppointmentModalProps = {
     start_time: string;
     end_time: string;
     phone_number: string | null;
+    patient?: Patient;
   };
   patients: Patient[];
   selectedDate?: Date;
@@ -42,7 +43,11 @@ export default function AppointmentModal({
 }: AppointmentModalProps) {
   const t = useDictionary();
   const { closeDialog, showFeedback } = useDialog();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(
+    appointment?.patient
+      ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
+      : ''
+  );
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
     appointment?.patient_id || null
   );

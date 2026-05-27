@@ -203,22 +203,31 @@ export default function AppointmentCalendar({
                           <span className="truncate mr-1">
                             {start.format('HH:mm')} - {app.patient?.first_name} {app.patient?.last_name}
                           </span>
-                          <div className="flex gap-1 flex-shrink-0">
-                             <Button
-                                iconName="edit"
-                                asLink
-                                onClick={() => {
-                                    handleEditAppointment(app);
-                                }}
-                                iconClassName="!text-xs"
-                             />
-                             <DeleteButton
-                                deleteAction={() => handleDelete(app.id)}
-                                message={t.appointments?.deleteAppointmentMessage || 'Delete this appointment?'}
-                                asLink
-                                dialogHeadline={t.appointments?.deleteAppointment || 'Delete Appointment'}
-                                iconClassName="!text-xs"
-                             />
+                          <div
+                            className="flex shrink-0 gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Button
+                              iconName="edit"
+                              asLink
+                              onClick={() => {
+                                handleEditAppointment(app);
+                              }}
+                              iconClassName="!text-xs"
+                            />
+                            <DeleteButton
+                              deleteAction={() => handleDelete(app.id)}
+                              message={
+                                t.appointments?.deleteAppointmentMessage ||
+                                'Delete this appointment?'
+                              }
+                              asLink
+                              dialogHeadline={
+                                t.appointments?.deleteAppointment ||
+                                'Delete Appointment'
+                              }
+                              iconClassName="!text-xs"
+                            />
                           </div>
                         </div>
                         {app.phone_number && (
@@ -292,7 +301,7 @@ export default function AppointmentCalendar({
                               </span>
                             )}
                           </div>
-                         <div className="flex gap-2">
+                         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                              <Button iconName="edit" asLink onClick={() => handleEditAppointment(app)} />
                              <DeleteButton
                                 deleteAction={() => handleDelete(app.id)}
