@@ -262,5 +262,8 @@ export const FULL_DICTIONARY_QUERY = defineQuery(`{
     "editAppointment": editAppointment[_key == $language][0].value,
     "deleteAppointment": deleteAppointment[_key == $language][0].value,
     "deleteAppointmentMessage": deleteAppointmentMessage[_key == $language][0].value,
+    "overlapWarning": overlapWarning[_key == $language][0].value,
+    "overlapProceed": overlapProceed[_key == $language][0].value,
+    "overlapCancel": overlapCancel[_key == $language][0].value,
   }
 }`);

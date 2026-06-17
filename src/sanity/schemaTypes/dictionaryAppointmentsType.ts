@@ -52,6 +52,21 @@ export const dictionaryAppointmentsType = defineType({
       title: 'Delete Appointment Message',
       type: 'internationalizedArrayString',
     }),
+    defineField({
+      name: 'overlapWarning',
+      title: 'Overlap Warning Message',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'overlapProceed',
+      title: 'Overlap Proceed Button',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'overlapCancel',
+      title: 'Overlap Cancel Button',
+      type: 'internationalizedArrayString',
+    }),
   ],
   preview: {
     prepare() {

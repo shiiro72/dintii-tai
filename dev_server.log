@@ -27,3 +27,25 @@ Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
  ○ Compiling middleware ...
  ✓ Compiled middleware in 960ms
  ✓ Ready in 2.9s
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (../src/createServerClient.ts:139:10)
+    at updateSession (src/supabase/middleware.ts:13:4)
+    at middleware (src/middleware.ts:14:46)
+  11 |
+  12 |   const supabase = createServerClient(
+> 13 |     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     |    ^
+  14 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  15 |     {
+  16 |       cookies: {
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 4.7s
+ GET /en/dashboard 404 in 9ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 6.8s

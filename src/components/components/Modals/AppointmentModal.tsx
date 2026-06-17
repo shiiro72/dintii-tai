@@ -75,6 +75,7 @@ export default function AppointmentModal({
       ? dayjs(appointment.end_time).format('YYYY-MM-DDTHH:mm')
       : ''
   );
+  const [showOverlapWarning, setShowOverlapWarning] = useState(false);
 
   const availableTimes = useMemo(() => {
     const times = [];
@@ -130,32 +131,15 @@ export default function AppointmentModal({
     }
   }, [selectedPatientId, startTime, patients, appointment]);
 
-  async function handleSubmit(formData: FormData) {
+  const saveAppointment = async () => {
     try {
+      const formData = new FormData();
       const newStart = dayjs(startTime);
       const newEnd = dayjs(endTime);
 
-      const hasOverlap = initialAppointments.some((app) => {
-        if (appointment && app.id === appointment.id) return false;
-
-        const appStart = dayjs(app.start_time);
-        const appEnd = dayjs(app.end_time);
-
-        return (
-          (newStart.isAfter(appStart) && newStart.isBefore(appEnd)) ||
-          (newEnd.isAfter(appStart) && newEnd.isBefore(appEnd)) ||
-          (newStart.isSameOrBefore(appStart) && newEnd.isSameOrAfter(appEnd))
-        );
-      });
-
-      if (hasOverlap) {
-        if (!confirm('This slot is already reserved. Do you want to proceed?')) {
-            return;
-        }
-      }
-
       formData.set('startTime', newStart.toISOString());
       formData.set('endTime', newEnd.toISOString());
+      formData.set('patientId', selectedPatientId?.toString() || '');
 
       if (appointment) {
         formData.append('id', appointment.id.toString());
@@ -168,11 +152,39 @@ export default function AppointmentModal({
         await addAppointment(formData);
       }
       closeDialog();
-      showFeedback('success', t?.feedback?.successMessage || 'Saved successfully');
+      showFeedback(
+        'success',
+        t?.feedback?.successMessage || 'Saved successfully'
+      );
       onSave?.();
     } catch (error) {
       showFeedback('error', `${t?.feedback?.errorMessage} ${error}`);
     }
+  };
+
+  async function handleSubmit() {
+    const newStart = dayjs(startTime);
+    const newEnd = dayjs(endTime);
+
+    const hasOverlap = initialAppointments.some((app) => {
+      if (appointment && app.id === appointment.id) return false;
+
+      const appStart = dayjs(app.start_time);
+      const appEnd = dayjs(app.end_time);
+
+      return (
+        (newStart.isAfter(appStart) && newStart.isBefore(appEnd)) ||
+        (newEnd.isAfter(appStart) && newEnd.isBefore(appEnd)) ||
+        (newStart.isSameOrBefore(appStart) && newEnd.isSameOrAfter(appEnd))
+      );
+    });
+
+    if (hasOverlap) {
+      setShowOverlapWarning(true);
+      return;
+    }
+
+    await saveAppointment();
   }
 
   const highlightMatch = (text: string, query: string) => {
@@ -192,6 +204,31 @@ export default function AppointmentModal({
       </span>
     );
   };
+
+  if (showOverlapWarning) {
+    return (
+      <div className="flex flex-col items-center gap-y-6 text-center">
+        <div className="text-xl text-white">
+          {t?.appointments?.overlapWarning ||
+            'This slot is already reserved. Do you want to proceed?'}
+        </div>
+        <div className="flex w-full gap-x-4">
+          <Button
+            label={t?.appointments?.overlapCancel || 'Cancel'}
+            onClick={() => setShowOverlapWarning(false)}
+            className="w-full rounded-full"
+            iconName="arrow_back"
+          />
+          <Button
+            label={t?.appointments?.overlapProceed || 'Proceed'}
+            onClick={saveAppointment}
+            className="w-full rounded-full"
+            iconName="check_circle"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-y-4">
