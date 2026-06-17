@@ -13,6 +13,74 @@
  */
 
 // Source: schema.json
+export type DictionaryAppointments = {
+  _id: string;
+  _type: 'dictionaryAppointments';
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  appointmentsHeadline?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  goToCalendar?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  selectPatient?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  startTime?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  endTime?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  addAppointment?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  editAppointment?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  deleteAppointment?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  deleteAppointmentMessage?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  overlapWarning?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  overlapProceed?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  overlapCancel?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+};
+
 export type DictionaryTodo = {
   _id: string;
   _type: 'dictionaryTodo';
@@ -295,6 +363,11 @@ export type DictionaryNavigation = {
       _key: string;
     } & InternationalizedArrayStringValue
   >;
+  appointments?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
   general?: Array<
     {
       _key: string;
@@ -372,6 +445,11 @@ export type DictionaryPatient = {
     } & InternationalizedArrayStringValue
   >;
   phone?: Array<
+    {
+      _key: string;
+    } & InternationalizedArrayStringValue
+  >;
+  email?: Array<
     {
       _key: string;
     } & InternationalizedArrayStringValue
@@ -735,6 +813,7 @@ export type SanityAssetSourceData = {
 };
 
 export type AllSanitySchemaTypes =
+  | DictionaryAppointments
   | DictionaryTodo
   | DictionaryForm
   | DictionaryFeedback
@@ -968,11 +1047,12 @@ export type DICTIONARY_EDIT_QUERYResult = {
   cancel: string | null;
 } | null;
 // Variable: DICTIONARY_PATIENT_QUERY
-// Query: *[_type == "dictionaryPatient"][0]{    "firstName": firstName[_key == $language][0].value,    "lastName": lastName[_key == $language][0].value,    "phone": phone[_key == $language][0].value,    "city": city[_key == $language][0].value,    "county": county[_key == $language][0].value,    "patientFile": patientFile[_key == $language][0].value,    "gdpr": gdpr[_key == $language][0].value,    "birthdate": birthdate[_key == $language][0].value,    "cnp": cnp  }
+// Query: *[_type == "dictionaryPatient"][0]{    "firstName": firstName[_key == $language][0].value,    "lastName": lastName[_key == $language][0].value,    "phone": phone[_key == $language][0].value,    "email": email[_key == $language][0].value,    "city": city[_key == $language][0].value,    "county": county[_key == $language][0].value,    "patientFile": patientFile[_key == $language][0].value,    "gdpr": gdpr[_key == $language][0].value,    "birthdate": birthdate[_key == $language][0].value,    "cnp": cnp  }
 export type DICTIONARY_PATIENT_QUERYResult = {
   firstName: string | null;
   lastName: string | null;
   phone: string | null;
+  email: string | null;
   city: string | null;
   county: string | null;
   patientFile: string | null;
@@ -1029,6 +1109,109 @@ export type DICTIONARY_TODO_QUERYResult = {
   addTODOItem: string | null;
   deleteTODOItemMessage: string | null;
 } | null;
+// Variable: FULL_DICTIONARY_QUERY
+// Query: {  "navigation": *[_type == "dictionaryNavigation"][0]{    "dashboard":dashboard[_key == $language][0].value,    "patients":patients[_key == $language][0].value,    "adults":adults[_key == $language][0].value,    "minors":minors[_key == $language][0].value,    "menu":menu[_key == $language][0].value,    "general":general[_key == $language][0].value,    "addNewUser":addNewUser[_key == $language][0].value,    "logout":logout[_key == $language][0].value,    "profile": profile[_key == $language][0].value,    "backToPatients": backToPatients[_key == $language][0].value,    "appointmentsLink": appointments[_key == $language][0].value,  },  "general": *[_type == "dictionaryGeneral"][0]{    "aboutUs":aboutUs[_key == $language][0].value,    "prices": prices[_key == $language][0].value,    "contact":contact[_key == $language][0].value,    "pricesTableTitle":pricesTableTitle[_key == $language][0].value,    "schedule":schedule[_key == $language][0].value,    "studio":studio,    "search":search[_key == $language][0].value,  },  "edit": *[_type == "dictionaryEdit"][0]{    "addPatient": addPatient[_key == $language][0].value,    "editPatient": editPatient[_key == $language][0].value,    "deletePatient": deletePatient[_key == $language][0].value,    "addTreatment": addTreatment[_key == $language][0].value,    "editTreatment": editTreatment[_key == $language][0].value,    "deleteTreatment": deleteTreatment[_key == $language][0].value,    "save": save[_key == $language][0].value,    "cancel": cancel[_key == $language][0].value,  },  "patient": *[_type == "dictionaryPatient"][0]{    "firstName": firstName[_key == $language][0].value,    "lastName": lastName[_key == $language][0].value,    "phone": phone[_key == $language][0].value,    "email": email[_key == $language][0].value,    "city": city[_key == $language][0].value,    "county": county[_key == $language][0].value,    "patientFile": patientFile[_key == $language][0].value,    "gdpr": gdpr[_key == $language][0].value,    "birthdate": birthdate[_key == $language][0].value,    "cnp": cnp  },  "treatment": *[_type == "dictionaryTreatment"][0]{    "treatment": treatment[_key == $language][0].value,    "treatments": treatments[_key == $language][0].value,    "price": price[_key == $language][0].value,    "consentFile": consentFile[_key == $language][0].value,    "date": date[_key == $language][0].value,  },  "feedback": *[_type == "dictionaryFeedback"][0]{    "successMessage": successMessage[_key == $language][0].value,    "errorMessage": errorMessage[_key == $language][0].value,    "deletePatientMessage": deletePatientMessage[_key == $language][0].value,    "deleteTreatmentMessage": deleteTreatmentMessage[_key == $language][0].value,    "emptyPatientData": emptyPatientData[_key == $language][0].value,    "emptyTreatmentData": emptyTreatmentData[_key == $language][0].value,    "yes": yes[_key == $language][0].value,    "no": no[_key == $language][0].value,  },  "form": *[_type == "dictionaryForm"][0]{    "backToLogin":backToLogin[_key == $language][0].value,    "resetPassword": resetPassword[_key == $language][0].value,    "updatePassword":updatePassword[_key == $language][0].value,    "forgotPassword":forgotPassword[_key == $language][0].value,    "login":login[_key == $language][0].value,    "email":email[_key == $language][0].value,    "password":password[_key == $language][0].value,    "confirmPassword":confirmPassword[_key == $language][0].value,    "passwordDoNotMatch":passwordDoNotMatch[_key == $language][0].value,    "patientAdultNotification":patientAdultNotification[_key == $language][0].value,  },  "todo": *[_type == "dictionaryTodo"][0]{    "todoHeadline": todoHeadline[_key == $language][0].value,    "todo": todo[_key == $language][0].value,    "comment": comment[_key == $language][0].value,    "done": done[_key == $language][0].value,    "redirectToTodoPage": redirectToTodoPage[_key == $language][0].value,    "editTODOItem": editTODOItem[_key == $language][0].value,    "deleteTODOItem": deleteTODOItem[_key == $language][0].value,    "emptyTODOList": emptyTODOList[_key == $language][0].value,    "addTODOItem": addTODOItem[_key == $language][0].value,    "deleteTODOItemMessage": deleteTODOItemMessage[_key == $language][0].value,  },  "appointments": *[_type == "dictionaryAppointments"][0]{    "appointmentsHeadline": appointmentsHeadline[_key == $language][0].value,    "goToCalendar": goToCalendar[_key == $language][0].value,    "selectPatient": selectPatient[_key == $language][0].value,    "startTime": startTime[_key == $language][0].value,    "endTime": endTime[_key == $language][0].value,    "addAppointment": addAppointment[_key == $language][0].value,    "editAppointment": editAppointment[_key == $language][0].value,    "deleteAppointment": deleteAppointment[_key == $language][0].value,    "deleteAppointmentMessage": deleteAppointmentMessage[_key == $language][0].value,    "overlapWarning": overlapWarning[_key == $language][0].value,    "overlapProceed": overlapProceed[_key == $language][0].value,    "overlapCancel": overlapCancel[_key == $language][0].value,  }}
+export type FULL_DICTIONARY_QUERYResult = {
+  navigation: {
+    dashboard: string | null;
+    patients: string | null;
+    adults: string | null;
+    minors: string | null;
+    menu: string | null;
+    general: string | null;
+    addNewUser: string | null;
+    logout: string | null;
+    profile: string | null;
+    backToPatients: string | null;
+    appointmentsLink: string | null;
+  } | null;
+  general: {
+    aboutUs: string | null;
+    prices: string | null;
+    contact: string | null;
+    pricesTableTitle: string | null;
+    schedule: string | null;
+    studio: string | null;
+    search: string | null;
+  } | null;
+  edit: {
+    addPatient: string | null;
+    editPatient: string | null;
+    deletePatient: string | null;
+    addTreatment: string | null;
+    editTreatment: string | null;
+    deleteTreatment: string | null;
+    save: string | null;
+    cancel: string | null;
+  } | null;
+  patient: {
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+    email: string | null;
+    city: string | null;
+    county: string | null;
+    patientFile: string | null;
+    gdpr: string | null;
+    birthdate: string | null;
+    cnp: string | null;
+  } | null;
+  treatment: {
+    treatment: string | null;
+    treatments: string | null;
+    price: string | null;
+    consentFile: string | null;
+    date: string | null;
+  } | null;
+  feedback: {
+    successMessage: string | null;
+    errorMessage: string | null;
+    deletePatientMessage: string | null;
+    deleteTreatmentMessage: string | null;
+    emptyPatientData: string | null;
+    emptyTreatmentData: string | null;
+    yes: string | null;
+    no: string | null;
+  } | null;
+  form: {
+    backToLogin: string | null;
+    resetPassword: string | null;
+    updatePassword: string | null;
+    forgotPassword: string | null;
+    login: string | null;
+    email: string | null;
+    password: string | null;
+    confirmPassword: string | null;
+    passwordDoNotMatch: string | null;
+    patientAdultNotification: string | null;
+  } | null;
+  todo: {
+    todoHeadline: string | null;
+    todo: string | null;
+    comment: string | null;
+    done: string | null;
+    redirectToTodoPage: string | null;
+    editTODOItem: string | null;
+    deleteTODOItem: string | null;
+    emptyTODOList: string | null;
+    addTODOItem: string | null;
+    deleteTODOItemMessage: string | null;
+  } | null;
+  appointments: {
+    appointmentsHeadline: string | null;
+    goToCalendar: string | null;
+    selectPatient: string | null;
+    startTime: string | null;
+    endTime: string | null;
+    addAppointment: string | null;
+    editAppointment: string | null;
+    deleteAppointment: string | null;
+    deleteAppointmentMessage: string | null;
+    overlapWarning: string | null;
+    overlapProceed: string | null;
+    overlapCancel: string | null;
+  } | null;
+};
 
 // Query TypeMap
 import '@sanity/client';
@@ -1043,10 +1226,11 @@ declare module '@sanity/client' {
     '*[_type == "dictionaryGeneral"][0]{\n    "aboutUs":aboutUs[_key == $language][0].value,\n    "prices": prices[_key == $language][0].value,\n    "contact":contact[_key == $language][0].value,\n    "pricesTableTitle":pricesTableTitle[_key == $language][0].value,\n    "schedule":schedule[_key == $language][0].value,\n    "studio":studio,\n    "search":search[_key == $language][0].value,\n  }': DICTIONARY_GENERAL_QUERYResult;
     '*[_type == "dictionaryNavigation"][0]{\n    "dashboard":dashboard[_key == $language][0].value,\n    "patients":patients[_key == $language][0].value,\n    "adults":adults[_key == $language][0].value,\n    "minors":minors[_key == $language][0].value,\n    "menu":menu[_key == $language][0].value,\n    "general":general[_key == $language][0].value,\n    "addNewUser":addNewUser[_key == $language][0].value,\n    "logout":logout[_key == $language][0].value,\n    "profile": profile[_key == $language][0].value,\n    "backToPatients": backToPatients[_key == $language][0].value,\n  }': DICTIONARY_NAVIGATION_QUERYResult;
     '*[_type == "dictionaryEdit"][0]{\n    "addPatient": addPatient[_key == $language][0].value,\n    "editPatient": editPatient[_key == $language][0].value,\n    "deletePatient": deletePatient[_key == $language][0].value,\n    "addTreatment": addTreatment[_key == $language][0].value,\n    "editTreatment": editTreatment[_key == $language][0].value,\n    "deleteTreatment": deleteTreatment[_key == $language][0].value,\n    "save": save[_key == $language][0].value,\n    "cancel": cancel[_key == $language][0].value,\n  }': DICTIONARY_EDIT_QUERYResult;
-    '*[_type == "dictionaryPatient"][0]{\n    "firstName": firstName[_key == $language][0].value,\n    "lastName": lastName[_key == $language][0].value,\n    "phone": phone[_key == $language][0].value,\n    "city": city[_key == $language][0].value,\n    "county": county[_key == $language][0].value,\n    "patientFile": patientFile[_key == $language][0].value,\n    "gdpr": gdpr[_key == $language][0].value,\n    "birthdate": birthdate[_key == $language][0].value,\n    "cnp": cnp\n  }': DICTIONARY_PATIENT_QUERYResult;
+    '*[_type == "dictionaryPatient"][0]{\n    "firstName": firstName[_key == $language][0].value,\n    "lastName": lastName[_key == $language][0].value,\n    "phone": phone[_key == $language][0].value,\n    "email": email[_key == $language][0].value,\n    "city": city[_key == $language][0].value,\n    "county": county[_key == $language][0].value,\n    "patientFile": patientFile[_key == $language][0].value,\n    "gdpr": gdpr[_key == $language][0].value,\n    "birthdate": birthdate[_key == $language][0].value,\n    "cnp": cnp\n  }': DICTIONARY_PATIENT_QUERYResult;
     '*[_type == "dictionaryTreatment"][0]{\n    "treatment": treatment[_key == $language][0].value,\n    "treatments": treatments[_key == $language][0].value,\n    "price": price[_key == $language][0].value,\n    "consentFile": consentFile[_key == $language][0].value,\n    "date": date[_key == $language][0].value,\n  }': DICTIONARY_TREATMENT_QUERYResult;
     '*[_type == "dictionaryFeedback"][0]{\n    "successMessage": successMessage[_key == $language][0].value,\n    "errorMessage": errorMessage[_key == $language][0].value,\n    "deletePatientMessage": deletePatientMessage[_key == $language][0].value,\n    "deleteTreatmentMessage": deleteTreatmentMessage[_key == $language][0].value,\n    "emptyPatientData": emptyPatientData[_key == $language][0].value,\n    "emptyTreatmentData": emptyTreatmentData[_key == $language][0].value,\n    "yes": yes[_key == $language][0].value,\n    "no": no[_key == $language][0].value,\n  }': DICTIONARY_FEEDBACK_QUERYResult;
     '*[_type == "dictionaryForm"][0]{\n    "backToLogin":backToLogin[_key == $language][0].value,\n    "resetPassword": resetPassword[_key == $language][0].value,\n    "updatePassword":updatePassword[_key == $language][0].value,\n    "forgotPassword":forgotPassword[_key == $language][0].value,\n    "login":login[_key == $language][0].value,\n    "email":email[_key == $language][0].value,\n    "password":password[_key == $language][0].value,\n    "confirmPassword":confirmPassword[_key == $language][0].value,\n    "passwordDoNotMatch":passwordDoNotMatch[_key == $language][0].value,\n    "patientAdultNotification":patientAdultNotification[_key == $language][0].value,\n  }': DICTIONARY_FORM_QUERYResult;
     '*[_type == "dictionaryTodo"][0]{\n    "todoHeadline": todoHeadline[_key == $language][0].value,\n    "todo": todo[_key == $language][0].value,\n    "comment": comment[_key == $language][0].value,\n    "done": done[_key == $language][0].value,\n    "redirectToTodoPage": redirectToTodoPage[_key == $language][0].value,\n    "editTODOItem": editTODOItem[_key == $language][0].value,\n    "deleteTODOItem": deleteTODOItem[_key == $language][0].value,\n    "emptyTODOList": emptyTODOList[_key == $language][0].value,\n    "addTODOItem": addTODOItem[_key == $language][0].value,\n    "deleteTODOItemMessage": deleteTODOItemMessage[_key == $language][0].value,\n  }': DICTIONARY_TODO_QUERYResult;
+    '{\n  "navigation": *[_type == "dictionaryNavigation"][0]{\n    "dashboard":dashboard[_key == $language][0].value,\n    "patients":patients[_key == $language][0].value,\n    "adults":adults[_key == $language][0].value,\n    "minors":minors[_key == $language][0].value,\n    "menu":menu[_key == $language][0].value,\n    "general":general[_key == $language][0].value,\n    "addNewUser":addNewUser[_key == $language][0].value,\n    "logout":logout[_key == $language][0].value,\n    "profile": profile[_key == $language][0].value,\n    "backToPatients": backToPatients[_key == $language][0].value,\n    "appointmentsLink": appointments[_key == $language][0].value,\n  },\n  "general": *[_type == "dictionaryGeneral"][0]{\n    "aboutUs":aboutUs[_key == $language][0].value,\n    "prices": prices[_key == $language][0].value,\n    "contact":contact[_key == $language][0].value,\n    "pricesTableTitle":pricesTableTitle[_key == $language][0].value,\n    "schedule":schedule[_key == $language][0].value,\n    "studio":studio,\n    "search":search[_key == $language][0].value,\n  },\n  "edit": *[_type == "dictionaryEdit"][0]{\n    "addPatient": addPatient[_key == $language][0].value,\n    "editPatient": editPatient[_key == $language][0].value,\n    "deletePatient": deletePatient[_key == $language][0].value,\n    "addTreatment": addTreatment[_key == $language][0].value,\n    "editTreatment": editTreatment[_key == $language][0].value,\n    "deleteTreatment": deleteTreatment[_key == $language][0].value,\n    "save": save[_key == $language][0].value,\n    "cancel": cancel[_key == $language][0].value,\n  },\n  "patient": *[_type == "dictionaryPatient"][0]{\n    "firstName": firstName[_key == $language][0].value,\n    "lastName": lastName[_key == $language][0].value,\n    "phone": phone[_key == $language][0].value,\n    "email": email[_key == $language][0].value,\n    "city": city[_key == $language][0].value,\n    "county": county[_key == $language][0].value,\n    "patientFile": patientFile[_key == $language][0].value,\n    "gdpr": gdpr[_key == $language][0].value,\n    "birthdate": birthdate[_key == $language][0].value,\n    "cnp": cnp\n  },\n  "treatment": *[_type == "dictionaryTreatment"][0]{\n    "treatment": treatment[_key == $language][0].value,\n    "treatments": treatments[_key == $language][0].value,\n    "price": price[_key == $language][0].value,\n    "consentFile": consentFile[_key == $language][0].value,\n    "date": date[_key == $language][0].value,\n  },\n  "feedback": *[_type == "dictionaryFeedback"][0]{\n    "successMessage": successMessage[_key == $language][0].value,\n    "errorMessage": errorMessage[_key == $language][0].value,\n    "deletePatientMessage": deletePatientMessage[_key == $language][0].value,\n    "deleteTreatmentMessage": deleteTreatmentMessage[_key == $language][0].value,\n    "emptyPatientData": emptyPatientData[_key == $language][0].value,\n    "emptyTreatmentData": emptyTreatmentData[_key == $language][0].value,\n    "yes": yes[_key == $language][0].value,\n    "no": no[_key == $language][0].value,\n  },\n  "form": *[_type == "dictionaryForm"][0]{\n    "backToLogin":backToLogin[_key == $language][0].value,\n    "resetPassword": resetPassword[_key == $language][0].value,\n    "updatePassword":updatePassword[_key == $language][0].value,\n    "forgotPassword":forgotPassword[_key == $language][0].value,\n    "login":login[_key == $language][0].value,\n    "email":email[_key == $language][0].value,\n    "password":password[_key == $language][0].value,\n    "confirmPassword":confirmPassword[_key == $language][0].value,\n    "passwordDoNotMatch":passwordDoNotMatch[_key == $language][0].value,\n    "patientAdultNotification":patientAdultNotification[_key == $language][0].value,\n  },\n  "todo": *[_type == "dictionaryTodo"][0]{\n    "todoHeadline": todoHeadline[_key == $language][0].value,\n    "todo": todo[_key == $language][0].value,\n    "comment": comment[_key == $language][0].value,\n    "done": done[_key == $language][0].value,\n    "redirectToTodoPage": redirectToTodoPage[_key == $language][0].value,\n    "editTODOItem": editTODOItem[_key == $language][0].value,\n    "deleteTODOItem": deleteTODOItem[_key == $language][0].value,\n    "emptyTODOList": emptyTODOList[_key == $language][0].value,\n    "addTODOItem": addTODOItem[_key == $language][0].value,\n    "deleteTODOItemMessage": deleteTODOItemMessage[_key == $language][0].value,\n  },\n  "appointments": *[_type == "dictionaryAppointments"][0]{\n    "appointmentsHeadline": appointmentsHeadline[_key == $language][0].value,\n    "goToCalendar": goToCalendar[_key == $language][0].value,\n    "selectPatient": selectPatient[_key == $language][0].value,\n    "startTime": startTime[_key == $language][0].value,\n    "endTime": endTime[_key == $language][0].value,\n    "addAppointment": addAppointment[_key == $language][0].value,\n    "editAppointment": editAppointment[_key == $language][0].value,\n    "deleteAppointment": deleteAppointment[_key == $language][0].value,\n    "deleteAppointmentMessage": deleteAppointmentMessage[_key == $language][0].value,\n    "overlapWarning": overlapWarning[_key == $language][0].value,\n    "overlapProceed": overlapProceed[_key == $language][0].value,\n    "overlapCancel": overlapCancel[_key == $language][0].value,\n  }\n}': FULL_DICTIONARY_QUERYResult;
   }
 }

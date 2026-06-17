@@ -106,7 +106,7 @@ export async function getPatientFields(
 
   const { data } = await supabase
     .from(PATIENT_DATABASE)
-    .select('id, first_name, last_name, phone')
+    .select('id, first_name, last_name, phone, birthdate')
     .or(categoryCondition)
     .order(element, { ascending: ascending })
     .range(from, to);

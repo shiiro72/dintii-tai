@@ -108,6 +108,7 @@ export const DICTIONARY_PATIENT_QUERY =
     "firstName": firstName[_key == $language][0].value,
     "lastName": lastName[_key == $language][0].value,
     "phone": phone[_key == $language][0].value,
+    "email": email[_key == $language][0].value,
     "city": city[_key == $language][0].value,
     "county": county[_key == $language][0].value,
     "patientFile": patientFile[_key == $language][0].value,
@@ -177,6 +178,7 @@ export const FULL_DICTIONARY_QUERY = defineQuery(`{
     "logout":logout[_key == $language][0].value,
     "profile": profile[_key == $language][0].value,
     "backToPatients": backToPatients[_key == $language][0].value,
+    "appointmentsLink": appointments[_key == $language][0].value,
   },
   "general": *[_type == "dictionaryGeneral"][0]{
     "aboutUs":aboutUs[_key == $language][0].value,
@@ -201,6 +203,7 @@ export const FULL_DICTIONARY_QUERY = defineQuery(`{
     "firstName": firstName[_key == $language][0].value,
     "lastName": lastName[_key == $language][0].value,
     "phone": phone[_key == $language][0].value,
+    "email": email[_key == $language][0].value,
     "city": city[_key == $language][0].value,
     "county": county[_key == $language][0].value,
     "patientFile": patientFile[_key == $language][0].value,
@@ -248,5 +251,19 @@ export const FULL_DICTIONARY_QUERY = defineQuery(`{
     "emptyTODOList": emptyTODOList[_key == $language][0].value,
     "addTODOItem": addTODOItem[_key == $language][0].value,
     "deleteTODOItemMessage": deleteTODOItemMessage[_key == $language][0].value,
+  },
+  "appointments": *[_type == "dictionaryAppointments"][0]{
+    "appointmentsHeadline": appointmentsHeadline[_key == $language][0].value,
+    "goToCalendar": goToCalendar[_key == $language][0].value,
+    "selectPatient": selectPatient[_key == $language][0].value,
+    "startTime": startTime[_key == $language][0].value,
+    "endTime": endTime[_key == $language][0].value,
+    "addAppointment": addAppointment[_key == $language][0].value,
+    "editAppointment": editAppointment[_key == $language][0].value,
+    "deleteAppointment": deleteAppointment[_key == $language][0].value,
+    "deleteAppointmentMessage": deleteAppointmentMessage[_key == $language][0].value,
+    "overlapWarning": overlapWarning[_key == $language][0].value,
+    "overlapProceed": overlapProceed[_key == $language][0].value,
+    "overlapCancel": overlapCancel[_key == $language][0].value,
   }
 }`);

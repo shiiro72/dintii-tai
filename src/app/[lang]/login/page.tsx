@@ -6,7 +6,8 @@ import { login } from '@/supabase/actions/userActions';
 import UserForm from '@/components/molecules/UserForm';
 
 export default function LoginPage() {
-  const { login: loginEntry } = useDictionary();
+  const dictionary = useDictionary();
+  const loginEntry = dictionary?.form?.login;
 
   return (
     <Dialog headline={loginEntry ?? 'Login'} closeButton={false}>

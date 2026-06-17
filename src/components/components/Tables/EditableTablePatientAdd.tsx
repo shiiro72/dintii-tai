@@ -24,8 +24,10 @@ export default function EditableTablePatientAdd({
   loadRows?: LoadRowsFunction;
   patientCategory?: PatientCategory;
 }) {
-  const { adults, minors, firstName, lastName, phone, patientFile } =
-    useDictionary();
+  const dictionary = useDictionary();
+  const { adults, minors } = dictionary?.navigation || {};
+  const { firstName, lastName, phone, patientFile } =
+    dictionary?.patient || {};
 
   return (
     <EditablePatientTable
@@ -60,28 +62,28 @@ export default function EditableTablePatientAdd({
               formFields={[
                 {
                   element: 'firstName',
-                  label: firstName,
+                  label: firstName || "First Name",
                   required: true,
                   value: undefined,
                   autoComplete: 'given-name',
                 },
                 {
                   element: 'lastName',
-                  label: lastName,
+                  label: lastName || "Last Name",
                   required: true,
                   value: undefined,
                   autoComplete: 'family-name',
                 },
                 {
                   element: 'phone',
-                  label: phone,
+                  label: phone || "Phone",
                   type: 'tel',
                   value: undefined,
                   autoComplete: 'tel',
                 },
                 {
                   element: 'patientFile',
-                  label: patientFile,
+                  label: patientFile || "Patient File",
                   type: 'file',
                 },
               ]}

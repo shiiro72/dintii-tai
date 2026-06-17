@@ -14,14 +14,14 @@ type TableProps = {
 
 export default function Table(props: TableProps) {
   const { treatments, showPrices = false } = props;
+  const dictionary = useDictionary();
 
   const treatmentGroups = Object.values(treatments);
   const {
     treatments: dictionaryTreatments,
     treatment,
-    pricesTableTitle,
-    prices,
-  } = useDictionary();
+  } = dictionary?.treatment || {};
+  const { prices, pricesTableTitle } = dictionary?.general || {};
 
   if (!treatmentGroups || !treatmentGroups.length) return null;
 

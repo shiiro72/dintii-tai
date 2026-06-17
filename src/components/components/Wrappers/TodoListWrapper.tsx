@@ -18,17 +18,17 @@ export type TodoListWrapperProps = {
 };
 
 export default function TodoListWrapper({ data }: TodoListWrapperProps) {
-  const { todoHeadline, todo, comment } = useDictionary();
+  const dictionary = useDictionary(); const { todoHeadline, todo, comment } = dictionary?.todo || {};
 
   const formFields = [
     {
       element: 'todo',
-      label: todo,
+      label: todo || "To-Do",
       value: undefined,
     },
     {
       element: 'comment',
-      label: comment,
+      label: comment || "Comment",
       value: undefined,
     },
   ];
