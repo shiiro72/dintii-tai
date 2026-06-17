@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/supabase/server';
 import { APPOINTMENT_DATABASE } from '@/types/GlobalTypes';
+import { sendWhatsAppMessage } from '@/supabase/whatsapp';
 import dayjs from 'dayjs';
 
 export async function GET(request: NextRequest) {
@@ -41,26 +42,48 @@ export async function POST(request: NextRequest) {
     }
 
     if (status) {
-      const supabase = await createClient();
+      try {
+        const supabase = await createClient();
 
-      // Find the most recent upcoming appointment for this phone number
-      // We look for appointments from today onwards
-      const { data: appointments } = await supabase
-        .from(APPOINTMENT_DATABASE)
-        .select('id')
-        .or(`phone_number.eq.${from}, phone_number.eq.+${from}`)
-        .gte('start_time', dayjs().startOf('day').toISOString())
-        .order('start_time', { ascending: true })
-        .limit(1);
-
-      if (appointments && appointments.length > 0) {
-        await supabase
+        // Find the most recent upcoming appointment for this phone number
+        // We look for appointments from today onwards
+        const { data: appointments, error: fetchError } = await supabase
           .from(APPOINTMENT_DATABASE)
-          .update({ status })
-          .eq('id', appointments[0].id);
+          .select('id')
+          .or(`phone_number.eq.${from}, phone_number.eq.+${from}`)
+          .gte('start_time', dayjs().startOf('day').toISOString())
+          .order('start_time', { ascending: true })
+          .limit(1);
 
-        console.log(`Updated appointment ${appointments[0].id} to ${status} for ${from}`);
+        if (fetchError) throw fetchError;
+
+        if (appointments && appointments.length > 0) {
+          const { error: updateError } = await supabase
+            .from(APPOINTMENT_DATABASE)
+            .update({ status })
+            .eq('id', appointments[0].id);
+
+          if (updateError) throw updateError;
+
+          console.log(`Updated appointment ${appointments[0].id} to ${status} for ${from}`);
+
+          const confirmationMsg = status === 'confirmed'
+            ? 'Vă mulțumim! Programarea dvs. a fost confirmată. / Thank you! Your appointment is confirmed.'
+            : 'Vă mulțumim! Programarea dvs. a fost anulată. / Thank you! Your appointment has been cancelled.';
+
+          await sendWhatsAppMessage(from, confirmationMsg);
+        } else {
+           await sendWhatsAppMessage(from, "Nu am găsit nicio programare viitoare pentru acest număr. / We couldn't find any upcoming appointments for this number.");
+        }
+      } catch (error) {
+        console.error('Error processing WhatsApp reply:', error);
       }
+    } else {
+      // Fallback for unrecognized replies
+      await sendWhatsAppMessage(
+        from,
+        "Nu am înțeles răspunsul. Vă rugăm să răspundeți cu DA sau NU. / I didn't understand the response. Please reply with YES or NO."
+      );
     }
   }
 

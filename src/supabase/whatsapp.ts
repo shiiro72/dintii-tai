@@ -2,20 +2,23 @@
  * WhatsApp Business API utility for sending messages.
  *
  * Configuration:
- * The message content is defined in `sendWhatsAppReminder` function.
- * It sends a bilingual message (Romanian and English).
+ * - Templates are used for initiating conversations (e.g., reminders).
+ * - Free-form text is used for replies within the 24-hour window.
  */
 
 const WHATSAPP_API_URL = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 
+/**
+ * Sends a free-form text message.
+ * Use this ONLY for replying to a user message within 24 hours.
+ */
 export async function sendWhatsAppMessage(to: string, message: string) {
   if (!ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
     console.error('WhatsApp credentials are not configured');
     return;
   }
 
-  // Ensure phone number has country code but no '+' for the API
   const formattedPhone = to.startsWith('+') ? to.substring(1) : to.startsWith('40') ? to : `40${to}`;
 
   try {
@@ -46,10 +49,51 @@ export async function sendWhatsAppMessage(to: string, message: string) {
   }
 }
 
+/**
+ * Sends an appointment reminder using a pre-approved Meta Template.
+ * Templates are required for initiating messages.
+ */
 export async function sendWhatsAppReminder(to: string, patientName: string, appointmentTime: string) {
-  const message = `Bună! Vă reamintim că aveți o programare mâine, la ora ${appointmentTime}. Mai puteți ajunge? (Vă rugăm să răspundeți cu DA sau NU)
+  if (!ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
+    console.error('WhatsApp credentials are not configured');
+    return;
+  }
 
-Hello! We remind you that you have an appointment tomorrow at ${appointmentTime}. Are you still coming? (Please respond with YES or NO)`;
+  const formattedPhone = to.startsWith('+') ? to.substring(1) : to.startsWith('40') ? to : `40${to}`;
 
-  return sendWhatsAppMessage(to, message);
+  try {
+    const response = await fetch(WHATSAPP_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: formattedPhone,
+        type: 'template',
+        template: {
+          name: 'appointment_reminder', // Must be approved in Meta Business Manager
+          language: { code: 'ro' },
+          components: [
+            {
+              type: 'body',
+              parameters: [
+                { type: 'text', text: patientName },
+                { type: 'text', text: appointmentTime }
+              ]
+            }
+          ]
+        }
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error('Error sending WhatsApp template reminder:', data);
+    }
+    return data;
+  } catch (error) {
+    console.error('WhatsApp Template API call failed:', error);
+  }
 }

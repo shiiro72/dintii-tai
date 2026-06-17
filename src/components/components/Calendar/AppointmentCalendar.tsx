@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
@@ -56,7 +56,27 @@ export default function AppointmentCalendar({
 
   const startOfWeek = currentDate.startOf('isoWeek');
   const daysOfWeek = Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, 'day'));
-  const hours = Array.from({ length: 11 }).map((_, i) => 8 + i); // 8 to 18
+
+  const hours = useMemo(() => {
+    const defaultStart = 8;
+    const defaultEnd = 18;
+
+    if (initialAppointments.length === 0) {
+      return Array.from({ length: defaultEnd - defaultStart + 1 }).map((_, i) => defaultStart + i);
+    }
+
+    let minHour = defaultStart;
+    let maxHour = defaultEnd;
+
+    initialAppointments.forEach(app => {
+      const startHour = dayjs(app.start_time).hour();
+      const endHour = dayjs(app.end_time).hour();
+      if (startHour < minHour) minHour = startHour;
+      if (endHour > maxHour) maxHour = endHour;
+    });
+
+    return Array.from({ length: maxHour - minHour + 1 }).map((_, i) => minHour + i);
+  }, [initialAppointments]);
 
   const startOfMonth = currentDate.startOf('month');
   const endOfMonth = currentDate.endOf('month');

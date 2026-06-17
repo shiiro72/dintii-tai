@@ -36,13 +36,24 @@ export async function GET(request: Request) {
   }
 
   const results = [];
-  for (const app of (appointments || [])) {
-    const phone = app.phone_number || app.patient?.phone;
-    if (phone) {
-      const time = dayjs(app.start_time).format('HH:mm');
-      const patientName = `${app.patient?.first_name || ''} ${app.patient?.last_name || ''}`.trim();
-      const result = await sendWhatsAppReminder(phone, patientName, time);
-      results.push({ appointmentId: app.id, result });
+  const concurrencyLimit = 10;
+
+  if (appointments) {
+    for (let i = 0; i < appointments.length; i += concurrencyLimit) {
+      const chunk = appointments.slice(i, i + concurrencyLimit);
+      const chunkPromises = chunk.map(async (app) => {
+        const phone = app.phone_number || app.patient?.phone;
+        if (phone) {
+          const time = dayjs(app.start_time).format('HH:mm');
+          const patientName = `${app.patient?.first_name || ''} ${app.patient?.last_name || ''}`.trim();
+          const result = await sendWhatsAppReminder(phone, patientName, time);
+          return { appointmentId: app.id, result };
+        }
+        return { appointmentId: app.id, result: 'No phone number' };
+      });
+
+      const chunkResults = await Promise.all(chunkPromises);
+      results.push(...chunkResults);
     }
   }
 

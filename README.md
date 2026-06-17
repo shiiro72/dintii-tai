@@ -24,11 +24,16 @@ The system sends automatic WhatsApp reminders to clients the day before their ap
 
 ### Configuration
 
-The reminder message is configured in `src/supabase/whatsapp.ts` within the `sendWhatsAppReminder` function.
+The reminder message uses a Meta Message Template named `appointment_reminder`. This template must be approved in your Meta Business Manager.
 
-The current message is:
-"Bună! Vă reamintim că aveți o programare mâine, la ora {time}. Mai puteți ajunge? (Vă rugăm să răspundeți cu DA sau NU)
-Hello! We remind you that you have an appointment tomorrow at {time}. Are you still coming? (Please respond with YES or NO)"
+**Template structure (Romanian):**
+"Bună {{1}}! Vă reamintim că aveți o programare mâine, la ora {{2}}. Mai puteți ajunge? (Vă rugăm să răspundeți cu DA sau NU)"
+
+**Template variables:**
+- `{{1}}`: Patient Name
+- `{{2}}`: Appointment Time
+
+Replies are handled automatically, and the system will send a confirmation or a fallback message if the reply is not recognized.
 
 ### Automation (CRON)
 
