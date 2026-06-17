@@ -35,6 +35,7 @@ type EditableTableProps = {
   addSearchBar?: boolean;
   initialSortOrder?: SortOrder;
   loadRows?: LoadRowsFunction;
+  onEditClick?: (rowData: { [key: string]: string }) => void;
   unsortableHeaders?: string[];
   useHeaderTranslationForRows?: string[];
   patientCategory?: PatientCategory;
@@ -66,6 +67,7 @@ export default function EditableTable(props: SpecificTableProps) {
     addSearchBar = false,
     initialSortOrder = 'asc',
     loadRows,
+    onEditClick,
     unsortableHeaders = [],
     useHeaderTranslationForRows = [],
     patientCategory,
@@ -350,29 +352,39 @@ export default function EditableTable(props: SpecificTableProps) {
                               header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
                             )}
 
-                            {header === editMessage &&
-                            editAction &&
-                            filledFormFields ? (
-                              <EditForm
-                                formFunctionality='edit'
-                                formAction={editAction}
-                                formFields={filledFormFields}
-                                asLink
-                                label=''
-                                addMessage={addMessage || ''}
-                                editMessage={
-                                  (() => {
-                                    const categories = Object.values(t || {});
-                                    for (const cat of categories) {
-                                      if (cat && typeof cat === 'object' && editMessage in cat) {
-                                        return (cat as Record<string, string>)[editMessage];
+                            {header === editMessage && (editAction || onEditClick) ? (
+                              onEditClick ? (
+                                <Button
+                                  iconName='edit'
+                                  asLink
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEditClick(entry);
+                                  }}
+                                  label=''
+                                />
+                              ) : editAction && filledFormFields ? (
+                                <EditForm
+                                  formFunctionality='edit'
+                                  formAction={editAction}
+                                  formFields={filledFormFields}
+                                  asLink
+                                  label=''
+                                  addMessage={addMessage || ''}
+                                  editMessage={
+                                    (() => {
+                                      const categories = Object.values(t || {});
+                                      for (const cat of categories) {
+                                        if (cat && typeof cat === 'object' && editMessage in cat) {
+                                          return (cat as Record<string, string>)[editMessage];
+                                        }
                                       }
-                                    }
-                                    return editMessage;
-                                  })()
-                                }
-                                buttonAddIconName={buttonAddIconName || ''}
-                              />
+                                      return editMessage;
+                                    })()
+                                  }
+                                  buttonAddIconName={buttonAddIconName || ''}
+                                />
+                              ) : undefined
                             ) : undefined}
 
                             {header === deleteMessage && deleteAction ? (
@@ -440,7 +452,7 @@ export function EditableAppointmentTable(props: EditableTableProps) {
       emptyTableMessage={dictionary?.feedback?.emptyPatientData || ''}
       initialSortOrder='desc'
       unsortableHeaders={['phone_number', 'patient_id']}
-      excludedHeaders={['id', 'patient_id', 'created_at']}
+      excludedHeaders={['id', 'patient_id', 'created_at', 'phone_number']}
       {...props}
     />
   );

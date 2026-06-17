@@ -26,7 +26,7 @@ export default function EditableTablePatientAdd({
 }) {
   const dictionary = useDictionary();
   const { adults, minors } = dictionary?.navigation || {};
-  const { firstName, lastName, phone, patientFile } =
+  const { firstName, lastName, phone, email, patientFile } =
     dictionary?.patient || {};
 
   return (
@@ -80,6 +80,13 @@ export default function EditableTablePatientAdd({
                   type: 'tel',
                   value: undefined,
                   autoComplete: 'tel',
+                },
+                {
+                  element: 'email',
+                  label: email || "Email",
+                  type: 'email',
+                  value: undefined,
+                  autoComplete: 'email',
                 },
                 {
                   element: 'patientFile',
