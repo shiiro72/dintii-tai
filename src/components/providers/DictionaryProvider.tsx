@@ -101,6 +101,9 @@ export const defaultDictionaryEntries: FULL_DICTIONARY_QUERYResult = {
     deleteAppointment: 'Delete Appointment',
     deleteAppointmentMessage:
       'Are you sure you want to delete this appointment?',
+    overlapWarning: null,
+    overlapProceed: null,
+    overlapCancel: null,
   },
 };
 
