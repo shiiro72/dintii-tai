@@ -76,15 +76,8 @@ export default function AppointmentModal({
       : ''
   );
   const [showOverlapWarning, setShowOverlapWarning] = useState(false);
+  const [showAddPatient, setShowAddPatient] = useState(false);
 
-  const availableTimes = useMemo(() => {
-    const times = [];
-    for (let h = 8; h <= 18; h++) {
-      times.push(`${h.toString().padStart(2, '0')}:00`);
-      times.push(`${h.toString().padStart(2, '0')}:30`);
-    }
-    return times;
-  }, []);
   const [showOptions, setShowOptions] = useState(false);
 
   const sortedPatients = useMemo(() => {
@@ -232,28 +225,45 @@ export default function AppointmentModal({
 
   return (
     <div className="flex flex-col gap-y-4">
-      <EditPatientForm
-        formFunctionality="add"
-        formAction={addPatient}
-        formFields={[
-          {
-            label: t?.patient?.firstName || 'First Name',
-            element: 'firstName',
-            required: true,
-          },
-          {
-            label: t?.patient?.lastName || 'Last Name',
-            element: 'lastName',
-            required: true,
-          },
-          {
-            label: t?.patient?.phone || 'Phone',
-            element: 'phone',
-            required: true,
-          },
-        ]}
-        className="w-full"
-      />
+      <div className="flex justify-end">
+        <Button
+          label={showAddPatient ? (t?.edit?.cancel || 'Cancel') : (t?.edit?.addPatient || 'Add Patient')}
+          iconName={showAddPatient ? 'close' : 'person_add'}
+          onClick={() => setShowAddPatient(!showAddPatient)}
+          asLink
+          className="!text-white hover:!text-gray-300"
+        />
+      </div>
+
+      {showAddPatient && (
+        <div className="border-b border-white/20 pb-4 mb-2">
+          <EditPatientForm
+            formFunctionality="add"
+            formAction={async (formData) => {
+              await addPatient(formData);
+              setShowAddPatient(false);
+            }}
+            formFields={[
+              {
+                label: t?.patient?.firstName || 'First Name',
+                element: 'firstName',
+                required: true,
+              },
+              {
+                label: t?.patient?.lastName || 'Last Name',
+                element: 'lastName',
+                required: true,
+              },
+              {
+                label: t?.patient?.phone || 'Phone',
+                element: 'phone',
+                required: true,
+              },
+            ]}
+            className="w-full"
+          />
+        </div>
+      )}
 
       <form action={handleSubmit} className="flex flex-col gap-y-4">
         <div className="relative">
@@ -322,26 +332,19 @@ export default function AppointmentModal({
             required
             containerClassName="flex-1"
           />
-          <div className="flex flex-1 flex-col gap-y-1">
-            <label className="text-xs text-white">
-              {t.appointments?.startTime || 'Start Time'}
-            </label>
-            <select
-              value={dayjs(startTime).format('HH:mm')}
-              onChange={(e) => {
-                const newTime = e.target.value;
-                const currentDate = dayjs(startTime).format('YYYY-MM-DD');
-                setStartTime(`${currentDate}T${newTime}`);
-              }}
-              className="rounded-lg border border-gray-500 bg-white p-3 text-black"
-            >
-              {availableTimes.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Input
+            label={t.appointments?.startTime || 'Start Time'}
+            element="startTimeTime"
+            type="time"
+            value={dayjs(startTime).format('HH:mm')}
+            onChange={(e) => {
+              const newTime = e.target.value;
+              const currentDate = dayjs(startTime).format('YYYY-MM-DD');
+              setStartTime(`${currentDate}T${newTime}`);
+            }}
+            required
+            containerClassName="flex-1"
+          />
         </div>
 
         <div className="flex gap-x-4">
@@ -358,26 +361,19 @@ export default function AppointmentModal({
             required
             containerClassName="flex-1"
           />
-          <div className="flex flex-1 flex-col gap-y-1">
-            <label className="text-xs text-white">
-              {t.appointments?.endTime || 'End Time'}
-            </label>
-            <select
-              value={dayjs(endTime).format('HH:mm')}
-              onChange={(e) => {
-                const newTime = e.target.value;
-                const currentDate = dayjs(endTime).format('YYYY-MM-DD');
-                setEndTime(`${currentDate}T${newTime}`);
-              }}
-              className="rounded-lg border border-gray-500 bg-white p-3 text-black"
-            >
-              {availableTimes.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Input
+            label={t.appointments?.endTime || 'End Time'}
+            element="endTimeTime"
+            type="time"
+            value={dayjs(endTime).format('HH:mm')}
+            onChange={(e) => {
+              const newTime = e.target.value;
+              const currentDate = dayjs(endTime).format('YYYY-MM-DD');
+              setEndTime(`${currentDate}T${newTime}`);
+            }}
+            required
+            containerClassName="flex-1"
+          />
         </div>
 
         <div className="flex gap-x-3 mt-4">

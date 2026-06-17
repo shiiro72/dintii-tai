@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useMemo, useState } from 'react';
+import dayjs from 'dayjs';
 import { convertSnakeToCamelCase, replaceEntry } from '@/helpers';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
 import { GoogleIcon } from '@/components/atoms/GoogleIcon';
@@ -248,23 +249,29 @@ export default function EditableTable(props: SpecificTableProps) {
                             sortDataByHeader(header, newSortOrder);
                           }}
                           label={
-                            (typeof (t as unknown as Record<string, string | null>)?.[
-                              convertSnakeToCamelCase(header)
-                            ] === 'string'
-                              ? ((t as unknown as Record<string, string | null>)?.[
-                                  convertSnakeToCamelCase(header)
-                                ] as string)
-                              : null) ?? header
+                            (() => {
+                              const camelHeader = convertSnakeToCamelCase(header);
+                              const categories = Object.values(t || {});
+                              for (const cat of categories) {
+                                if (cat && typeof cat === 'object' && camelHeader in cat) {
+                                  return (cat as Record<string, string>)[camelHeader];
+                                }
+                              }
+                              return header;
+                            })()
                           }
                         />
                       ) : (
-                        (typeof (t as unknown as Record<string, string | null>)?.[
-                          convertSnakeToCamelCase(header)
-                        ] === 'string'
-                          ? ((t as unknown as Record<string, string | null>)?.[
-                              convertSnakeToCamelCase(header)
-                            ] as string)
-                          : null) ?? header
+                        (() => {
+                          const camelHeader = convertSnakeToCamelCase(header);
+                          const categories = Object.values(t || {});
+                          for (const cat of categories) {
+                            if (cat && typeof cat === 'object' && camelHeader in cat) {
+                              return (cat as Record<string, string>)[camelHeader];
+                            }
+                          }
+                          return header;
+                        })()
                       )}
                     </th>
                   ))}
@@ -329,13 +336,16 @@ export default function EditableTable(props: SpecificTableProps) {
                               />
                             ) : useHeaderTranslationForRows.includes(header) &&
                               entry[header] != undefined ? (
-                              (typeof (t as unknown as Record<string, string | null>)?.[
-                                convertSnakeToCamelCase(header)
-                              ] === 'string'
-                                ? ((t as unknown as Record<string, string | null>)?.[
-                                    convertSnakeToCamelCase(header)
-                                  ] as string)
-                                : null) ?? header
+                              (() => {
+                                const camelValue = convertSnakeToCamelCase(String(entry[header]));
+                                const categories = Object.values(t || {});
+                                for (const cat of categories) {
+                                  if (cat && typeof cat === 'object' && camelValue in cat) {
+                                    return (cat as Record<string, string>)[camelValue];
+                                  }
+                                }
+                                return String(entry[header]);
+                              })()
                             ) : (
                               header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
                             )}
@@ -351,7 +361,15 @@ export default function EditableTable(props: SpecificTableProps) {
                                 label=''
                                 addMessage={addMessage || ''}
                                 editMessage={
-                                  ((t as unknown as Record<string, string | null>)?.[editMessage] as string) ?? ''
+                                  (() => {
+                                    const categories = Object.values(t || {});
+                                    for (const cat of categories) {
+                                      if (cat && typeof cat === 'object' && editMessage in cat) {
+                                        return (cat as Record<string, string>)[editMessage];
+                                      }
+                                    }
+                                    return editMessage;
+                                  })()
                                 }
                                 buttonAddIconName={buttonAddIconName || ''}
                               />
@@ -369,7 +387,15 @@ export default function EditableTable(props: SpecificTableProps) {
                                 className='!text-red-700 hover:!text-red-500'
                                 asLink
                                 dialogHeadline={
-                                  ((t as unknown as Record<string, string | null>)?.[deleteMessage] as string) ?? ''
+                                  (() => {
+                                    const categories = Object.values(t || {});
+                                    for (const cat of categories) {
+                                      if (cat && typeof cat === 'object' && deleteMessage in cat) {
+                                        return (cat as Record<string, string>)[deleteMessage];
+                                      }
+                                    }
+                                    return deleteMessage;
+                                  })()
                                 }
                               />
                             ) : undefined}
