@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { convertSnakeToCamelCase, replaceEntry } from '@/helpers';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
@@ -103,12 +103,13 @@ export default function EditableTable(props: SpecificTableProps) {
 
   const [containerRef, isVisible] = useElementInViewport();
 
-  const [rangeStart, setRangeStart] = useState(ROWS_TO_LOAD);
+  const rangeStartRef = useRef(ROWS_TO_LOAD);
   const [moreDataToLoad, setMoreDataToLoad] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setTableData(data ?? []);
-    setRangeStart(ROWS_TO_LOAD);
+    rangeStartRef.current = ROWS_TO_LOAD;
 
     if ((data?.length ?? 0) <= ROWS_TO_LOAD - 1) {
       setMoreDataToLoad(false);
@@ -118,44 +119,47 @@ export default function EditableTable(props: SpecificTableProps) {
   }, [data]);
 
   const fetchData = useCallback(async () => {
-    if (!moreDataToLoad) return;
+    if (!moreDataToLoad || loading) return;
 
-    const rangeTo = rangeStart + ROWS_TO_LOAD - 1;
-    setRangeStart(rangeTo + 1);
+    setLoading(true);
+    const currentRangeStart = rangeStartRef.current;
+    const rangeTo = currentRangeStart + ROWS_TO_LOAD - 1;
 
-    const newData = await loadRows?.({
-      from: rangeStart,
-      to: rangeTo,
-      ascending: sortOrder === 'asc',
-      element: sortedHeader ?? undefined,
-      category: patientCategory,
-    });
-
-    if (newData && newData?.length) {
-      setTableData((prevData) => {
-        const existingIds = new Set(prevData.map((item) => item.id));
-        const filteredNewData = newData.filter(
-          (item) => !existingIds.has(item.id)
-        );
-        return [...prevData, ...filteredNewData];
+    try {
+      const newData = await loadRows?.({
+        from: currentRangeStart,
+        to: rangeTo,
+        ascending: sortOrder === 'asc',
+        element: sortedHeader ?? undefined,
+        category: patientCategory,
       });
-    } else {
-      setMoreDataToLoad(false);
+
+      if (newData && newData?.length) {
+        rangeStartRef.current = currentRangeStart + ROWS_TO_LOAD;
+        setTableData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const filteredNewData = newData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...filteredNewData];
+        });
+
+        if (newData.length < ROWS_TO_LOAD) {
+          setMoreDataToLoad(false);
+        }
+      } else {
+        setMoreDataToLoad(false);
+      }
+    } finally {
+      setLoading(false);
     }
-  }, [
-    moreDataToLoad,
-    rangeStart,
-    loadRows,
-    sortOrder,
-    sortedHeader,
-    patientCategory,
-  ]);
+  }, [moreDataToLoad, loading, loadRows, sortOrder, sortedHeader, patientCategory]);
 
   useEffect(() => {
-    if (!moreDataToLoad || !isVisible) return;
+    if (!moreDataToLoad || !isVisible || loading) return;
 
     fetchData();
-  }, [isVisible, moreDataToLoad, fetchData]);
+  }, [isVisible, moreDataToLoad, loading, fetchData]);
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return tableData;
@@ -179,7 +183,7 @@ export default function EditableTable(props: SpecificTableProps) {
 
     const newSortedData = await loadRows?.({
       from: 0,
-      to: rangeStart - 1,
+      to: rangeStartRef.current - 1,
       ascending: order === 'asc',
       element: header,
       category: patientCategory,
@@ -257,36 +261,26 @@ export default function EditableTable(props: SpecificTableProps) {
                             setSortOrder(newSortOrder);
                             sortDataByHeader(header, newSortOrder);
                           }}
-                          label={(() => {
-                            const camelHeader = convertSnakeToCamelCase(header);
-                            const categories = Object.values(t || {});
-                            for (const cat of categories) {
-                              if (
-                                cat &&
-                                typeof cat === 'object' &&
-                                camelHeader in cat
-                              ) {
-                                return (cat as Record<string, string>)[
-                                  camelHeader
-                                ];
+                          label={
+                            (() => {
+                              const camelHeader = convertSnakeToCamelCase(header);
+                              const categories = Object.values(t || {});
+                              for (const cat of categories) {
+                                if (cat && typeof cat === 'object' && camelHeader in cat) {
+                                  return (cat as Record<string, string>)[camelHeader];
+                                }
                               }
-                            }
-                            return header;
-                          })()}
+                              return header;
+                            })()
+                          }
                         />
                       ) : (
                         (() => {
                           const camelHeader = convertSnakeToCamelCase(header);
                           const categories = Object.values(t || {});
                           for (const cat of categories) {
-                            if (
-                              cat &&
-                              typeof cat === 'object' &&
-                              camelHeader in cat
-                            ) {
-                              return (cat as Record<string, string>)[
-                                camelHeader
-                              ];
+                            if (cat && typeof cat === 'object' && camelHeader in cat) {
+                              return (cat as Record<string, string>)[camelHeader];
                             }
                           }
                           return header;
@@ -356,37 +350,25 @@ export default function EditableTable(props: SpecificTableProps) {
                             ) : useHeaderTranslationForRows.includes(header) &&
                               entry[header] != undefined ? (
                               (() => {
-                                const camelValue = convertSnakeToCamelCase(
-                                  String(entry[header])
-                                );
+                                const camelValue = convertSnakeToCamelCase(String(entry[header]));
                                 const categories = Object.values(t || {});
                                 for (const cat of categories) {
-                                  if (
-                                    cat &&
-                                    typeof cat === 'object' &&
-                                    camelValue in cat
-                                  ) {
-                                    return (cat as Record<string, string>)[
-                                      camelValue
-                                    ];
+                                  if (cat && typeof cat === 'object' && camelValue in cat) {
+                                    return (cat as Record<string, string>)[camelValue];
                                   }
                                 }
                                 return String(entry[header]);
                               })()
-                            ) : header.includes('time') && entry[header] ? (
-                              dayjs(entry[header]).format('DD/MM/YYYY HH:mm')
                             ) : (
-                              entry[header]
+                              header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
                             )}
 
-                            {header === editMessage &&
-                            (editAction || onEditClick) ? (
+                            {header === editMessage && (editAction || onEditClick) ? (
                               onEditClick ? (
                                 <Button
                                   iconName='edit'
                                   asLink
-                                  onClick={(e) => {
-                                    e?.stopPropagation();
+                                  onClick={() => {
                                     onEditClick(entry);
                                   }}
                                   label=''
@@ -399,21 +381,17 @@ export default function EditableTable(props: SpecificTableProps) {
                                   asLink
                                   label=''
                                   addMessage={addMessage || ''}
-                                  editMessage={(() => {
-                                    const categories = Object.values(t || {});
-                                    for (const cat of categories) {
-                                      if (
-                                        cat &&
-                                        typeof cat === 'object' &&
-                                        editMessage in cat
-                                      ) {
-                                        return (cat as Record<string, string>)[
-                                          editMessage
-                                        ];
+                                  editMessage={
+                                    (() => {
+                                      const categories = Object.values(t || {});
+                                      for (const cat of categories) {
+                                        if (cat && typeof cat === 'object' && editMessage in cat) {
+                                          return (cat as Record<string, string>)[editMessage];
+                                        }
                                       }
-                                    }
-                                    return editMessage;
-                                  })()}
+                                      return editMessage;
+                                    })()
+                                  }
                                   buttonAddIconName={buttonAddIconName || ''}
                                 />
                               ) : undefined
@@ -430,21 +408,17 @@ export default function EditableTable(props: SpecificTableProps) {
                                 )}
                                 className='!text-red-700 hover:!text-red-500'
                                 asLink
-                                dialogHeadline={(() => {
-                                  const categories = Object.values(t || {});
-                                  for (const cat of categories) {
-                                    if (
-                                      cat &&
-                                      typeof cat === 'object' &&
-                                      deleteMessage in cat
-                                    ) {
-                                      return (cat as Record<string, string>)[
-                                        deleteMessage
-                                      ];
+                                dialogHeadline={
+                                  (() => {
+                                    const categories = Object.values(t || {});
+                                    for (const cat of categories) {
+                                      if (cat && typeof cat === 'object' && deleteMessage in cat) {
+                                        return (cat as Record<string, string>)[deleteMessage];
+                                      }
                                     }
-                                  }
-                                  return deleteMessage;
-                                })()}
+                                    return deleteMessage;
+                                  })()
+                                }
                               />
                             ) : undefined}
                           </td>
@@ -480,13 +454,7 @@ export function EditablePatientTable(props: EditableTableProps) {
   );
 }
 
-type EditableAppointmentTableProps = EditableTableProps & {
-  editMessage?: string;
-  deleteMessage?: string;
-  deleteDialogMessage?: string;
-};
-
-export function EditableAppointmentTable(props: EditableAppointmentTableProps) {
+export function EditableAppointmentTable(props: EditableTableProps & { editMessage?: string; deleteMessage?: string }) {
   const dictionary = useDictionary();
 
   return (

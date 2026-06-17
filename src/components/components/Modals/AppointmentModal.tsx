@@ -91,7 +91,9 @@ export default function AppointmentModal({
     let duration = 30;
     if (patient) {
       const birthdate = patient.birthdate ? dayjs(patient.birthdate) : null;
-      const isAdult = birthdate ? dayjs().diff(birthdate, 'year') >= 18 : true;
+      const isAdult = birthdate
+        ? dayjs().diff(birthdate, 'year') >= 18
+        : true;
       duration = isAdult ? 60 : 30;
     }
 
@@ -209,7 +211,7 @@ export default function AppointmentModal({
       <span>
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <span key={i} className='bg-yellow-200 font-bold'>
+            <span key={i} className="bg-yellow-200 font-bold">
               {part}
             </span>
           ) : (
@@ -222,23 +224,23 @@ export default function AppointmentModal({
 
   if (showOverlapWarning) {
     return (
-      <div className='flex flex-col items-center gap-y-6 text-center'>
-        <div className='text-xl text-white'>
+      <div className="flex flex-col items-center gap-y-6 text-center">
+        <div className="text-xl text-white">
           {t?.appointments?.overlapWarning ||
             'This slot is already reserved. Do you want to proceed?'}
         </div>
-        <div className='flex w-full gap-x-4'>
+        <div className="flex w-full gap-x-4">
           <Button
             label={t?.appointments?.overlapCancel || 'Cancel'}
             onClick={() => setShowOverlapWarning(false)}
-            className='w-full rounded-full'
-            iconName='arrow_back'
+            className="w-full rounded-full"
+            iconName="arrow_back"
           />
           <Button
             label={t?.appointments?.overlapProceed || 'Proceed'}
             onClick={saveAppointment}
-            className='w-full rounded-full'
-            iconName='check_circle'
+            className="w-full rounded-full"
+            iconName="check_circle"
           />
         </div>
       </div>
@@ -246,25 +248,21 @@ export default function AppointmentModal({
   }
 
   return (
-    <div className='flex flex-col gap-y-4'>
-      <div className='flex justify-end'>
+    <div className="flex flex-col gap-y-4">
+      <div className="flex justify-end">
         <Button
-          label={
-            showAddPatient
-              ? t?.edit?.cancel || 'Cancel'
-              : t?.edit?.addPatient || 'Add Patient'
-          }
+          label={showAddPatient ? (t?.edit?.cancel || 'Cancel') : (t?.edit?.addPatient || 'Add Patient')}
           iconName={showAddPatient ? 'close' : 'person_add'}
           onClick={() => setShowAddPatient(!showAddPatient)}
           asLink
-          className='!text-white hover:!text-gray-300'
+          className="!text-white hover:!text-gray-300"
         />
       </div>
 
       {showAddPatient && (
-        <div className='mb-2 border-b border-white/20 pb-4'>
+        <div className="border-b border-white/20 pb-4 mb-2">
           <EditPatientForm
-            formFunctionality='add'
+            formFunctionality="add"
             formAction={async (formData) => {
               await addPatient(formData);
               setShowAddPatient(false);
@@ -286,13 +284,13 @@ export default function AppointmentModal({
                 required: true,
               },
             ]}
-            className='w-full'
+            className="w-full"
           />
         </div>
       )}
 
-      <form action={handleSubmit} className='flex flex-col gap-y-4'>
-        <div className='relative'>
+      <form action={handleSubmit} className="flex flex-col gap-y-4">
+        <div className="relative">
           <Input
             label={
               selectedPatientId
@@ -301,7 +299,7 @@ export default function AppointmentModal({
                   ' ' +
                   (t?.navigation?.patients || 'Patients')
             }
-            element='patientSearch'
+            element="patientSearch"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -310,26 +308,26 @@ export default function AppointmentModal({
             }}
             onFocus={() => setShowOptions(true)}
             onBlur={() => setTimeout(() => setShowOptions(false), 200)}
-            autoComplete='off'
+            autoComplete="off"
           >
             {selectedPatientId && (
               <Button
-                iconName='close'
+                iconName="close"
                 asLink
                 onClick={() => {
                   setSelectedPatientId(null);
                   setSearchTerm('');
                 }}
-                className='absolute top-3 right-2'
+                className="absolute right-2 top-3"
               />
             )}
           </Input>
           {showOptions && filteredPatients.length > 0 && !selectedPatientId && (
-            <ul className='absolute z-50 max-h-48 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg'>
+            <ul className="absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
               {filteredPatients.map((p) => (
                 <li
                   key={p.id}
-                  className='cursor-pointer px-4 py-2 text-black hover:bg-gray-100'
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-black"
                   onClick={() => {
                     setSelectedPatientId(p.id);
                     setSearchTerm(`${p.first_name} ${p.last_name}`);
@@ -342,12 +340,12 @@ export default function AppointmentModal({
             </ul>
           )}
         </div>
-        <input type='hidden' name='patientId' value={selectedPatientId || ''} />
+        <input type="hidden" name="patientId" value={selectedPatientId || ''} />
 
         <Input
           label={t.treatment?.date || 'Date'}
-          element='appointmentDate'
-          type='date'
+          element="appointmentDate"
+          type="date"
           value={dayjs(startTime).format('YYYY-MM-DD')}
           onChange={(e) => {
             const newDate = e.target.value;
@@ -359,11 +357,11 @@ export default function AppointmentModal({
           required
         />
 
-        <div className='flex gap-x-4'>
+        <div className="flex gap-x-4">
           <Input
             label={t.appointments?.startTime || 'Start Time'}
-            element='startTime'
-            type='time'
+            element="startTime"
+            type="time"
             value={dayjs(startTime).format('HH:mm')}
             onChange={(e) => {
               const newTime = e.target.value;
@@ -371,12 +369,12 @@ export default function AppointmentModal({
               setStartTime(`${currentDate}T${newTime}`);
             }}
             required
-            containerClassName='flex-1'
+            containerClassName="flex-1"
           />
           <Input
             label={t.appointments?.endTime || 'End Time'}
-            element='endTime'
-            type='time'
+            element="endTime"
+            type="time"
             value={dayjs(endTime).format('HH:mm')}
             onChange={(e) => {
               const newTime = e.target.value;
@@ -384,23 +382,23 @@ export default function AppointmentModal({
               setEndTime(`${currentDate}T${newTime}`);
             }}
             required
-            containerClassName='flex-1'
+            containerClassName="flex-1"
           />
         </div>
 
-        <div className='mt-4 flex gap-x-3'>
+        <div className="flex gap-x-3 mt-4">
           <Button
             label={t?.edit?.cancel || 'Cancel'}
             onClick={closeDialog}
-            type='button'
-            className='w-full rounded-full'
-            iconName='cancel'
+            type="button"
+            className="w-full rounded-full"
+            iconName="cancel"
           />
           <Button
             label={t?.edit?.save || 'Save'}
-            type='submit'
-            className='w-full rounded-full'
-            iconName='save'
+            type="submit"
+            className="w-full rounded-full"
+            iconName="save"
             disabled={!selectedPatientId}
           />
         </div>

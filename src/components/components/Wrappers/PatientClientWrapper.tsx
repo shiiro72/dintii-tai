@@ -14,16 +14,13 @@ import { useDictionary } from '../../providers/DictionaryProvider';
 import TreatmentsOverview, {
   TreatmentsOverviewProps,
 } from '../Wrappers/TreatmentsOverview';
-import {
-  LoadRowsFunction,
-  PatientCategory,
-  SupabaseArray,
-} from '@/types/GeneralTypes';
+import { LoadRowsFunction, PatientCategory, SupabaseArray } from '@/types/GeneralTypes';
 import { EditableAppointmentTable } from '../Tables/EditableTable';
 import { Button } from '@/components/atoms/Button';
 import { useDialog } from '@/components/providers/DialogProvider';
 import AppointmentModal from '../Modals/AppointmentModal';
 import { deleteAppointment } from '@/supabase/actions/appointmentActions';
+import { useRouter } from 'next/navigation';
 
 type PatientClientWrapperProps = TreatmentsOverviewProps &
   ProfileOverviewProps & {
@@ -45,6 +42,7 @@ export default function PatientClientWrapper({
   patientCategory,
 }: PatientClientWrapperProps) {
   const dictionary = useDictionary();
+  const router = useRouter();
   const { handleClick } = useDialog();
   const { backToPatients, profile } = dictionary?.navigation || {};
   const treatmentText = dictionary?.treatment?.treatment;
@@ -106,15 +104,15 @@ export default function PatientClientWrapper({
                       <AppointmentModal
                         patients={[
                           {
-                            id: patientID,
+                            id: patient.id as number,
                             first_name: patient.first_name || '',
                             last_name: patient.last_name || '',
                             phone: patient.phone || '',
-                            birthdate: patient.birthdate || '',
+                            birthdate: patient.birthdate || null,
                           },
                         ]}
                         patientId={patientID}
-                        onSave={() => {}}
+                        onSave={() => router.refresh()}
                         initialAppointments={
                           appointments as {
                             id: number;
@@ -142,24 +140,24 @@ export default function PatientClientWrapper({
                       end_time: rowData.end_time,
                       phone_number: rowData.phone_number,
                       patient: {
-                        id: patientID,
+                        id: patient.id as number,
                         first_name: patient.first_name || '',
                         last_name: patient.last_name || '',
                         phone: patient.phone || '',
-                        birthdate: patient.birthdate || '',
+                        birthdate: patient.birthdate || null,
                       },
                     }}
                     patients={[
                       {
-                        id: patientID,
+                        id: patient.id as number,
                         first_name: patient.first_name || '',
                         last_name: patient.last_name || '',
                         phone: patient.phone || '',
-                        birthdate: patient.birthdate || '',
+                        birthdate: patient.birthdate || null,
                       },
                     ]}
                     patientId={patientID}
-                    onSave={() => {}}
+                    onSave={() => router.refresh()}
                     initialAppointments={
                       appointments as {
                         id: number;
@@ -171,12 +169,13 @@ export default function PatientClientWrapper({
                   editAppointmentText || 'Edit Appointment'
                 )
               }
-              deleteAction={deleteAppointment}
-              editMessage={editAppointmentText || 'Edit Appointment'}
-              deleteMessage={deleteAppointmentText || 'Delete Appointment'}
-              deleteDialogMessage={
-                deleteAppointmentMessage || 'Delete Appointment'
-              }
+              deleteAction={async (id) => {
+                await deleteAppointment(id);
+                router.refresh();
+              }}
+              editMessage={editAppointmentText ?? undefined}
+              deleteMessage={deleteAppointmentText ?? undefined}
+              deleteDialogMessage={deleteAppointmentMessage ?? undefined}
             />
           </div>
         </Tab>
