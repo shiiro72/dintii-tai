@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { convertSnakeToCamelCase, replaceEntry } from '@/helpers';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
@@ -117,13 +117,7 @@ export default function EditableTable(props: SpecificTableProps) {
     }
   }, [data]);
 
-  useEffect(() => {
-    if (!moreDataToLoad || !isVisible) return;
-
-    fetchData();
-  }, [isVisible, tableData]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     if (!moreDataToLoad) return;
 
     const rangeTo = rangeStart + ROWS_TO_LOAD - 1;
@@ -148,7 +142,13 @@ export default function EditableTable(props: SpecificTableProps) {
     } else {
       setMoreDataToLoad(false);
     }
-  }
+  }, [moreDataToLoad, rangeStart, loadRows, sortOrder, sortedHeader, patientCategory]);
+
+  useEffect(() => {
+    if (!moreDataToLoad || !isVisible) return;
+
+    fetchData();
+  }, [isVisible, moreDataToLoad, fetchData]);
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return tableData;
@@ -165,7 +165,7 @@ export default function EditableTable(props: SpecificTableProps) {
       const initialHeader = headers[0];
       setSortedHeader(initialHeader);
     }
-  }, []);
+  }, [headers, sortedHeader]);
 
   async function sortDataByHeader(header: string, order: SortOrder) {
     if (!tableData) return;
