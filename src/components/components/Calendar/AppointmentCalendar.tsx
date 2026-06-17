@@ -144,12 +144,13 @@ export default function AppointmentCalendar({
       ))}
       {monthDays.map((day) => {
         const isPast = day.isBefore(dayjs().startOf('day'));
+        const isWeekend = day.day() === 0 || day.day() === 6;
         return (
           <div
             key={day.toString()}
-            className={`relative min-h-[100px] border border-gray-100 p-1 ${isPast ? 'bg-gray-200 grayscale opacity-60' : 'bg-white'}`}
+            className={`relative min-h-[100px] border border-gray-100 p-1 ${isPast ? 'bg-gray-200 grayscale opacity-60' : isWeekend ? 'bg-orange-50' : 'bg-white'}`}
           >
-            <span className="text-sm text-gray-500">{day.date()}</span>
+            <span className={`text-sm ${isWeekend ? 'font-bold text-orange-600' : 'text-gray-500'}`}>{day.date()}</span>
             <div className="relative z-10 mt-1 flex flex-col gap-1">
               {getAppointmentsForDate(day).map((app) => (
                 <div
@@ -181,12 +182,18 @@ export default function AppointmentCalendar({
     <div className="flex flex-col overflow-x-auto">
       <div className="flex border-b border-gray-200 min-w-[800px]">
         <div className="w-20 flex-shrink-0"></div>
-        {daysOfWeek.map(day => (
-          <div key={day.toString()} className={`flex-1 text-center p-2 border-l border-gray-200 ${day.isSame(dayjs(), 'day') ? 'bg-blue-50 font-bold' : 'bg-base-dark text-white'}`}>
-            <div>{day.format('ddd')}</div>
-            <div className="text-sm">{day.format('DD/MM')}</div>
-          </div>
-        ))}
+        {daysOfWeek.map((day) => {
+          const isWeekend = day.day() === 0 || day.day() === 6;
+          return (
+            <div
+              key={day.toString()}
+              className={`flex-1 border-l border-gray-200 p-2 text-center ${day.isSame(dayjs(), 'day') ? 'bg-blue-50 font-bold' : isWeekend ? 'bg-orange-600 text-white' : 'bg-base-dark text-white'}`}
+            >
+              <div>{day.format('ddd')}</div>
+              <div className="text-sm">{day.format('DD/MM')}</div>
+            </div>
+          );
+        })}
       </div>
       <div className="flex flex-col min-w-[800px]">
         {hours.map(hour => (
@@ -196,13 +203,15 @@ export default function AppointmentCalendar({
             </div>
             {daysOfWeek.map(day => {
               const dayApps = getAppointmentsForDate(day).filter(app => dayjs(app.start_time).hour() === hour);
+              const isPast = day.isBefore(dayjs().startOf('day'));
+              const isWeekend = day.day() === 0 || day.day() === 6;
               return (
                 <div
                   key={day.toString() + hour}
-                  className="flex-1 border-l border-gray-100 relative group bg-white"
+                  className={`flex-1 border-l border-gray-100 relative group ${isPast ? 'bg-gray-100' : isWeekend ? 'bg-orange-50/30' : 'bg-white'}`}
                   onClick={() => handleSlotClick(day, hour)}
                 >
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-blue-500 cursor-pointer" />
+                  {!isPast && <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-blue-500 cursor-pointer" />}
                   {dayApps.map(app => {
                     const start = dayjs(app.start_time);
                     const end = dayjs(app.end_time);
@@ -232,6 +241,7 @@ export default function AppointmentCalendar({
                             <NextLink
                               href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
                               className="cursor-pointer hover:underline"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               {app.patient?.first_name} {app.patient?.last_name}
                             </NextLink>
@@ -287,14 +297,18 @@ export default function AppointmentCalendar({
     </div>
   );
 
-  const renderDayView = () => (
+  const renderDayView = () => {
+    const isWeekend = currentDate.day() === 0 || currentDate.day() === 6;
+    const isPast = currentDate.isBefore(dayjs().startOf('day'));
+
+    return (
     <div className="flex flex-col">
-       <div className="text-center p-4 bg-base-dark text-white font-bold mb-4">
+       <div className={`text-center p-4 ${isWeekend ? 'bg-orange-600' : 'bg-base-dark'} text-white font-bold mb-4`}>
           {currentDate.format('dddd, MMMM D, YYYY')}
        </div>
        <div className="flex flex-col border border-gray-200">
           {hours.map(hour => (
-             <div key={hour} className="flex border-b border-gray-100 h-24 bg-white relative group" onClick={() => handleSlotClick(currentDate, hour)}>
+             <div key={hour} className={`flex border-b border-gray-100 h-24 ${isPast ? 'bg-gray-100' : isWeekend ? 'bg-orange-50' : 'bg-white'} relative group`} onClick={() => handleSlotClick(currentDate, hour)}>
                 <div className="w-24 flex-shrink-0 text-right pr-4 text-gray-400 font-medium py-2 border-r border-gray-100">
                     {hour}:00
                 </div>
@@ -321,6 +335,7 @@ export default function AppointmentCalendar({
                             <NextLink
                               href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
                               className="ml-3 cursor-pointer font-semibold hover:underline"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               {app.patient?.first_name} {app.patient?.last_name}
                             </NextLink>
@@ -353,7 +368,8 @@ export default function AppointmentCalendar({
           ))}
        </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4">

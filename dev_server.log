@@ -1,0 +1,29 @@
+
+> dintii-tai@0.1.0 predev
+> npm run typegen
+
+
+> dintii-tai@0.1.0 typegen
+> sanity schema extract --path=./src/sanity/extract.json && sanity typegen generate
+
+- Extracting schema
+✓ Extracted schema to ./src/sanity/extract.json
+- Generating types
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ℹ️ Formatted generated types with Prettier
+✓ Generated TypeScript types for 30 schema types and 15 GROQ queries in 1 files into: ./src/sanity/types.ts
+
+> dintii-tai@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.3.8 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 960ms
+ ✓ Ready in 2.9s

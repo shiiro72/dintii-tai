@@ -337,7 +337,7 @@ export default function EditableTable(props: SpecificTableProps) {
                                   ] as string)
                                 : null) ?? header
                             ) : (
-                              entry[header]
+                              header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
                             )}
 
                             {header === editMessage &&

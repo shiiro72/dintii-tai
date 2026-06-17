@@ -75,6 +75,14 @@ export default function PatientClientWrapper({
         </Tab>
         <Tab title={appointmentsHeadline ?? ''}>
           <div className='bg-background rounded-lg p-5 md:p-10'>
+            <div className='border-font/20 mb-2 flex flex-row border-b-2 border-dashed pb-2'>
+              <div className='flex flex-1 items-center'>
+                <Headline
+                  headline={appointmentsHeadline ?? ''}
+                  className='!mb-0 !text-2xl'
+                />
+              </div>
+            </div>
             <EditableAppointmentTable
               data={appointments}
               loadRows={loadAppointmentRows}
