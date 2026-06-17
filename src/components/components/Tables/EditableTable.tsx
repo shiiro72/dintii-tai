@@ -78,21 +78,24 @@ export default function EditableTable(props: SpecificTableProps) {
 
   const dictionary = useDictionary();
   const t = dictionary;
-  let filledFormFields = formFields;
 
-  const headers = data?.length
-    ? excludedHeaders
-      ? Object.keys(data[0]).filter((key) => !excludedHeaders.includes(key))
-      : Object.keys(data[0])
-    : null;
+  const headers = useMemo(() => {
+    const baseHeaders = data?.length
+      ? excludedHeaders
+        ? Object.keys(data[0]).filter((key) => !excludedHeaders.includes(key))
+        : Object.keys(data[0])
+      : [];
 
-  if (editAction && formFields) {
-    headers?.push(editMessage ?? 'Edit');
-  }
+    if (editAction && formFields) {
+      baseHeaders.push(editMessage ?? 'Edit');
+    }
 
-  if (deleteAction) {
-    headers?.push(deleteMessage ?? 'Delete');
-  }
+    if (deleteAction) {
+      baseHeaders.push(deleteMessage ?? 'Delete');
+    }
+
+    return baseHeaders;
+  }, [data, excludedHeaders, editAction, formFields, editMessage, deleteAction, deleteMessage]);
 
   const cellClasses = 'p-3 text-font text-base border-b border-font/20';
 
@@ -104,8 +107,8 @@ export default function EditableTable(props: SpecificTableProps) {
   const [containerRef, isVisible] = useElementInViewport();
 
   const rangeStartRef = useRef(ROWS_TO_LOAD);
+  const loadingRef = useRef(false);
   const [moreDataToLoad, setMoreDataToLoad] = useState(true);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setTableData(data ?? []);
@@ -119,9 +122,9 @@ export default function EditableTable(props: SpecificTableProps) {
   }, [data]);
 
   const fetchData = useCallback(async () => {
-    if (!moreDataToLoad || loading) return;
+    if (!moreDataToLoad || loadingRef.current) return;
 
-    setLoading(true);
+    loadingRef.current = true;
     const currentRangeStart = rangeStartRef.current;
     const rangeTo = currentRangeStart + ROWS_TO_LOAD - 1;
 
@@ -151,15 +154,15 @@ export default function EditableTable(props: SpecificTableProps) {
         setMoreDataToLoad(false);
       }
     } finally {
-      setLoading(false);
+      loadingRef.current = false;
     }
-  }, [moreDataToLoad, loading, loadRows, sortOrder, sortedHeader, patientCategory]);
+  }, [moreDataToLoad, loadRows, sortOrder, sortedHeader, patientCategory]);
 
   useEffect(() => {
-    if (!moreDataToLoad || !isVisible || loading) return;
+    if (!moreDataToLoad || !isVisible) return;
 
     fetchData();
-  }, [isVisible, moreDataToLoad, loading, fetchData]);
+  }, [isVisible, moreDataToLoad, fetchData]);
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return tableData;
@@ -291,24 +294,24 @@ export default function EditableTable(props: SpecificTableProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredData?.map((entry, index) => {
+                {filteredData?.map((entry, rowIndex) => {
                   const { clickableCellHeader, clickableCellFunction } =
                     clickableCell || {};
 
                   return (
                     <tr
-                      key={index}
+                      key={rowIndex}
                       className={`hover:bg-background/50 ${onClickRow ? 'cursor-pointer' : ''}`}
                       onClick={() => onClickRow?.(entry)}
                     >
-                      {headers?.map((header, index) => {
-                        filledFormFields = formFields?.map((field) =>
+                      {headers.map((header, colIndex) => {
+                        const filledFormFields = formFields?.map((field) =>
                           !field.value
                             ? { ...field, value: entry[field.element] }
                             : field
-                        );
+                        ) || [];
 
-                        filledFormFields?.push({
+                        filledFormFields.push({
                           element: 'id',
                           label: 'id',
                           value: entry['id'],
@@ -318,7 +321,7 @@ export default function EditableTable(props: SpecificTableProps) {
 
                         return (
                           <td
-                            key={index}
+                            key={colIndex}
                             className={`${cellClasses} ${clickableCellHeader === header ? 'text-link hover:text-link-hover cursor-pointer font-semibold' : ''}`}
                             onClick={(e) => {
                               if (
@@ -365,14 +368,16 @@ export default function EditableTable(props: SpecificTableProps) {
 
                             {header === editMessage && (editAction || onEditClick) ? (
                               onEditClick ? (
-                                <Button
-                                  iconName='edit'
-                                  asLink
-                                  onClick={() => {
-                                    onEditClick(entry);
-                                  }}
-                                  label=''
-                                />
+                                <div onClick={(e) => e.stopPropagation()}>
+                                  <Button
+                                    iconName='edit'
+                                    asLink
+                                    onClick={() => {
+                                      onEditClick(entry);
+                                    }}
+                                    label=''
+                                  />
+                                </div>
                               ) : editAction && filledFormFields ? (
                                 <EditForm
                                   formFunctionality='edit'
