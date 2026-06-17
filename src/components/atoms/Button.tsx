@@ -3,7 +3,12 @@ import { GoogleIcon, GoogleIconProps } from './GoogleIcon';
 export type ButtonProps = Partial<GoogleIconProps> & {
   className?: string;
   label?: string | null;
-  onClick?: () => void;
+  onClick?: (
+    e:
+      | React.MouseEvent<HTMLButtonElement>
+      | React.MouseEvent<HTMLAnchorElement>
+      | undefined
+  ) => void;
   href?: string;
   asLink?: boolean;
   type?: 'button' | 'submit' | 'reset';
@@ -65,7 +70,7 @@ export function Button({
     </a>
   ) : (
     <button
-      className={`${buttonClasses} ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+      className={`${buttonClasses} ${disabled ? 'cursor-not-allowed opacity-50 grayscale' : ''}`}
       onClick={onClick}
       formAction={formAction}
       type={type}

@@ -142,7 +142,14 @@ export default function EditableTable(props: SpecificTableProps) {
     } else {
       setMoreDataToLoad(false);
     }
-  }, [moreDataToLoad, rangeStart, loadRows, sortOrder, sortedHeader, patientCategory]);
+  }, [
+    moreDataToLoad,
+    rangeStart,
+    loadRows,
+    sortOrder,
+    sortedHeader,
+    patientCategory,
+  ]);
 
   useEffect(() => {
     if (!moreDataToLoad || !isVisible) return;
@@ -250,26 +257,36 @@ export default function EditableTable(props: SpecificTableProps) {
                             setSortOrder(newSortOrder);
                             sortDataByHeader(header, newSortOrder);
                           }}
-                          label={
-                            (() => {
-                              const camelHeader = convertSnakeToCamelCase(header);
-                              const categories = Object.values(t || {});
-                              for (const cat of categories) {
-                                if (cat && typeof cat === 'object' && camelHeader in cat) {
-                                  return (cat as Record<string, string>)[camelHeader];
-                                }
+                          label={(() => {
+                            const camelHeader = convertSnakeToCamelCase(header);
+                            const categories = Object.values(t || {});
+                            for (const cat of categories) {
+                              if (
+                                cat &&
+                                typeof cat === 'object' &&
+                                camelHeader in cat
+                              ) {
+                                return (cat as Record<string, string>)[
+                                  camelHeader
+                                ];
                               }
-                              return header;
-                            })()
-                          }
+                            }
+                            return header;
+                          })()}
                         />
                       ) : (
                         (() => {
                           const camelHeader = convertSnakeToCamelCase(header);
                           const categories = Object.values(t || {});
                           for (const cat of categories) {
-                            if (cat && typeof cat === 'object' && camelHeader in cat) {
-                              return (cat as Record<string, string>)[camelHeader];
+                            if (
+                              cat &&
+                              typeof cat === 'object' &&
+                              camelHeader in cat
+                            ) {
+                              return (cat as Record<string, string>)[
+                                camelHeader
+                              ];
                             }
                           }
                           return header;
@@ -339,26 +356,37 @@ export default function EditableTable(props: SpecificTableProps) {
                             ) : useHeaderTranslationForRows.includes(header) &&
                               entry[header] != undefined ? (
                               (() => {
-                                const camelValue = convertSnakeToCamelCase(String(entry[header]));
+                                const camelValue = convertSnakeToCamelCase(
+                                  String(entry[header])
+                                );
                                 const categories = Object.values(t || {});
                                 for (const cat of categories) {
-                                  if (cat && typeof cat === 'object' && camelValue in cat) {
-                                    return (cat as Record<string, string>)[camelValue];
+                                  if (
+                                    cat &&
+                                    typeof cat === 'object' &&
+                                    camelValue in cat
+                                  ) {
+                                    return (cat as Record<string, string>)[
+                                      camelValue
+                                    ];
                                   }
                                 }
                                 return String(entry[header]);
                               })()
+                            ) : header.includes('time') && entry[header] ? (
+                              dayjs(entry[header]).format('DD/MM/YYYY HH:mm')
                             ) : (
-                              header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
+                              entry[header]
                             )}
 
-                            {header === editMessage && (editAction || onEditClick) ? (
+                            {header === editMessage &&
+                            (editAction || onEditClick) ? (
                               onEditClick ? (
                                 <Button
                                   iconName='edit'
                                   asLink
                                   onClick={(e) => {
-                                    e.stopPropagation();
+                                    e?.stopPropagation();
                                     onEditClick(entry);
                                   }}
                                   label=''
@@ -371,17 +399,21 @@ export default function EditableTable(props: SpecificTableProps) {
                                   asLink
                                   label=''
                                   addMessage={addMessage || ''}
-                                  editMessage={
-                                    (() => {
-                                      const categories = Object.values(t || {});
-                                      for (const cat of categories) {
-                                        if (cat && typeof cat === 'object' && editMessage in cat) {
-                                          return (cat as Record<string, string>)[editMessage];
-                                        }
+                                  editMessage={(() => {
+                                    const categories = Object.values(t || {});
+                                    for (const cat of categories) {
+                                      if (
+                                        cat &&
+                                        typeof cat === 'object' &&
+                                        editMessage in cat
+                                      ) {
+                                        return (cat as Record<string, string>)[
+                                          editMessage
+                                        ];
                                       }
-                                      return editMessage;
-                                    })()
-                                  }
+                                    }
+                                    return editMessage;
+                                  })()}
                                   buttonAddIconName={buttonAddIconName || ''}
                                 />
                               ) : undefined
@@ -398,17 +430,21 @@ export default function EditableTable(props: SpecificTableProps) {
                                 )}
                                 className='!text-red-700 hover:!text-red-500'
                                 asLink
-                                dialogHeadline={
-                                  (() => {
-                                    const categories = Object.values(t || {});
-                                    for (const cat of categories) {
-                                      if (cat && typeof cat === 'object' && deleteMessage in cat) {
-                                        return (cat as Record<string, string>)[deleteMessage];
-                                      }
+                                dialogHeadline={(() => {
+                                  const categories = Object.values(t || {});
+                                  for (const cat of categories) {
+                                    if (
+                                      cat &&
+                                      typeof cat === 'object' &&
+                                      deleteMessage in cat
+                                    ) {
+                                      return (cat as Record<string, string>)[
+                                        deleteMessage
+                                      ];
                                     }
-                                    return deleteMessage;
-                                  })()
-                                }
+                                  }
+                                  return deleteMessage;
+                                })()}
                               />
                             ) : undefined}
                           </td>
@@ -444,7 +480,13 @@ export function EditablePatientTable(props: EditableTableProps) {
   );
 }
 
-export function EditableAppointmentTable(props: EditableTableProps) {
+type EditableAppointmentTableProps = EditableTableProps & {
+  editMessage?: string;
+  deleteMessage?: string;
+  deleteDialogMessage?: string;
+};
+
+export function EditableAppointmentTable(props: EditableAppointmentTableProps) {
   const dictionary = useDictionary();
 
   return (

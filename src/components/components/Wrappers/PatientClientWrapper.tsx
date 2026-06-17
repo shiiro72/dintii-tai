@@ -14,7 +14,11 @@ import { useDictionary } from '../../providers/DictionaryProvider';
 import TreatmentsOverview, {
   TreatmentsOverviewProps,
 } from '../Wrappers/TreatmentsOverview';
-import { LoadRowsFunction, PatientCategory, SupabaseArray } from '@/types/GeneralTypes';
+import {
+  LoadRowsFunction,
+  PatientCategory,
+  SupabaseArray,
+} from '@/types/GeneralTypes';
 import { EditableAppointmentTable } from '../Tables/EditableTable';
 import { Button } from '@/components/atoms/Button';
 import { useDialog } from '@/components/providers/DialogProvider';
@@ -102,11 +106,11 @@ export default function PatientClientWrapper({
                       <AppointmentModal
                         patients={[
                           {
-                            id: patient.id,
+                            id: patientID,
                             first_name: patient.first_name || '',
                             last_name: patient.last_name || '',
                             phone: patient.phone || '',
-                            birthdate: patient.birthdate || null,
+                            birthdate: patient.birthdate || '',
                           },
                         ]}
                         patientId={patientID}
@@ -138,20 +142,20 @@ export default function PatientClientWrapper({
                       end_time: rowData.end_time,
                       phone_number: rowData.phone_number,
                       patient: {
-                        id: patient.id,
+                        id: patientID,
                         first_name: patient.first_name || '',
                         last_name: patient.last_name || '',
                         phone: patient.phone || '',
-                        birthdate: patient.birthdate || null,
+                        birthdate: patient.birthdate || '',
                       },
                     }}
                     patients={[
                       {
-                        id: patient.id,
+                        id: patientID,
                         first_name: patient.first_name || '',
                         last_name: patient.last_name || '',
                         phone: patient.phone || '',
-                        birthdate: patient.birthdate || null,
+                        birthdate: patient.birthdate || '',
                       },
                     ]}
                     patientId={patientID}
@@ -168,9 +172,11 @@ export default function PatientClientWrapper({
                 )
               }
               deleteAction={deleteAppointment}
-              editMessage={editAppointmentText}
-              deleteMessage={deleteAppointmentText}
-              deleteDialogMessage={deleteAppointmentMessage}
+              editMessage={editAppointmentText || 'Edit Appointment'}
+              deleteMessage={deleteAppointmentText || 'Delete Appointment'}
+              deleteDialogMessage={
+                deleteAppointmentMessage || 'Delete Appointment'
+              }
             />
           </div>
         </Tab>
