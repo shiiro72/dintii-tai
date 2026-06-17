@@ -25,7 +25,7 @@ export default function TreatmentsOverview({
   patientID,
   loadRows,
 }: TreatmentsOverviewProps) {
-  const { treatment, date, price, consentFile } = useDictionary();
+  const dictionary = useDictionary(); const { treatment, date, price, consentFile } = dictionary?.treatment || {};
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -43,24 +43,24 @@ export default function TreatmentsOverview({
   const formFields = [
     {
       element: 'date',
-      label: date,
+      label: date || "Date",
       value: today,
       type: 'date',
     },
     {
       element: 'treatment',
-      label: treatment,
+      label: treatment || "Treatment",
       value: undefined,
     },
     {
       element: 'price',
-      label: price,
+      label: price || "Price",
       value: undefined,
       type: 'number',
     },
     {
       element: 'consentFile',
-      label: consentFile,
+      label: consentFile || "Consent",
       value: undefined,
       type: 'file',
     },

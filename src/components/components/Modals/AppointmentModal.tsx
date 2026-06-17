@@ -6,12 +6,17 @@ import { useDialog } from '@/components/providers/DialogProvider';
 import { Input } from '@/components/atoms/Input';
 import { Button } from '@/components/atoms/Button';
 import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import {
   addAppointment,
   editAppointment,
 } from '@/supabase/actions/appointmentActions';
 import { addPatient } from '@/supabase/actions/patientActions';
 import { EditPatientForm } from '@/components/molecules/EditForm';
+
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 type Patient = {
   id: number;
@@ -40,7 +45,14 @@ export default function AppointmentModal({
   patients,
   selectedDate,
   onSave,
-}: AppointmentModalProps) {
+  initialAppointments = [],
+}: AppointmentModalProps & {
+  initialAppointments?: {
+    id: number;
+    start_time: string;
+    end_time: string;
+  }[];
+}) {
   const t = useDictionary();
   const { closeDialog, showFeedback } = useDialog();
   const [searchTerm, setSearchTerm] = useState(
@@ -55,14 +67,23 @@ export default function AppointmentModal({
     appointment?.start_time
       ? dayjs(appointment.start_time).format('YYYY-MM-DDTHH:mm')
       : selectedDate
-      ? dayjs(selectedDate).format('YYYY-MM-DDTHH:mm')
-      : dayjs().format('YYYY-MM-DDTHH:mm')
+        ? dayjs(selectedDate).format('YYYY-MM-DDTHH:mm')
+        : dayjs().format('YYYY-MM-DDTHH:mm')
   );
   const [endTime, setEndTime] = useState(
     appointment?.end_time
       ? dayjs(appointment.end_time).format('YYYY-MM-DDTHH:mm')
       : ''
   );
+
+  const availableTimes = useMemo(() => {
+    const times = [];
+    for (let h = 8; h <= 18; h++) {
+      times.push(`${h.toString().padStart(2, '0')}:00`);
+      times.push(`${h.toString().padStart(2, '0')}:30`);
+    }
+    return times;
+  }, []);
   const [showOptions, setShowOptions] = useState(false);
 
   const sortedPatients = useMemo(() => {
@@ -111,8 +132,30 @@ export default function AppointmentModal({
 
   async function handleSubmit(formData: FormData) {
     try {
-      formData.set('startTime', dayjs(startTime).toISOString());
-      formData.set('endTime', dayjs(endTime).toISOString());
+      const newStart = dayjs(startTime);
+      const newEnd = dayjs(endTime);
+
+      const hasOverlap = initialAppointments.some((app) => {
+        if (appointment && app.id === appointment.id) return false;
+
+        const appStart = dayjs(app.start_time);
+        const appEnd = dayjs(app.end_time);
+
+        return (
+          (newStart.isAfter(appStart) && newStart.isBefore(appEnd)) ||
+          (newEnd.isAfter(appStart) && newEnd.isBefore(appEnd)) ||
+          (newStart.isSameOrBefore(appStart) && newEnd.isSameOrAfter(appEnd))
+        );
+      });
+
+      if (hasOverlap) {
+        if (!confirm('This slot is already reserved. Do you want to proceed?')) {
+            return;
+        }
+      }
+
+      formData.set('startTime', newStart.toISOString());
+      formData.set('endTime', newEnd.toISOString());
 
       if (appointment) {
         formData.append('id', appointment.id.toString());
@@ -125,10 +168,10 @@ export default function AppointmentModal({
         await addAppointment(formData);
       }
       closeDialog();
-      showFeedback('success', t.successMessage || 'Saved successfully');
+      showFeedback('success', t?.feedback?.successMessage || 'Saved successfully');
       onSave?.();
     } catch (error) {
-      showFeedback('error', `${t.errorMessage} ${error}`);
+      showFeedback('error', `${t?.feedback?.errorMessage} ${error}`);
     }
   }
 
@@ -156,9 +199,21 @@ export default function AppointmentModal({
         formFunctionality="add"
         formAction={addPatient}
         formFields={[
-          { label: t.firstName, element: 'firstName', required: true },
-          { label: t.lastName, element: 'lastName', required: true },
-          { label: t.phone, element: 'phone', required: true },
+          {
+            label: t?.patient?.firstName || 'First Name',
+            element: 'firstName',
+            required: true,
+          },
+          {
+            label: t?.patient?.lastName || 'Last Name',
+            element: 'lastName',
+            required: true,
+          },
+          {
+            label: t?.patient?.phone || 'Phone',
+            element: 'phone',
+            required: true,
+          },
         ]}
         className="w-full"
       />
@@ -166,7 +221,13 @@ export default function AppointmentModal({
       <form action={handleSubmit} className="flex flex-col gap-y-4">
         <div className="relative">
           <Input
-            label={selectedPatientId ? t.patients : t.search + ' ' + t.patients}
+            label={
+              selectedPatientId
+                ? t?.navigation?.patients || 'Patients'
+                : (t?.general?.search || 'Search') +
+                  ' ' +
+                  (t?.navigation?.patients || 'Patients')
+            }
             element="patientSearch"
             value={searchTerm}
             onChange={(e) => {
@@ -210,34 +271,88 @@ export default function AppointmentModal({
         </div>
         <input type="hidden" name="patientId" value={selectedPatientId || ''} />
 
-        <Input
-          label={t.appointments?.startTime || 'Start Time'}
-          element="startTime"
-          type="datetime-local"
-          value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
-          required
-        />
+        <div className="flex gap-x-4">
+          <Input
+            label={t.appointments?.startTime || 'Start Time'}
+            element="startTimeDate"
+            type="date"
+            value={dayjs(startTime).format('YYYY-MM-DD')}
+            onChange={(e) => {
+              const newDate = e.target.value;
+              const currentTime = dayjs(startTime).format('HH:mm');
+              setStartTime(`${newDate}T${currentTime}`);
+            }}
+            required
+            containerClassName="flex-1"
+          />
+          <div className="flex flex-1 flex-col gap-y-1">
+            <label className="text-xs text-white">
+              {t.appointments?.startTime || 'Start Time'}
+            </label>
+            <select
+              value={dayjs(startTime).format('HH:mm')}
+              onChange={(e) => {
+                const newTime = e.target.value;
+                const currentDate = dayjs(startTime).format('YYYY-MM-DD');
+                setStartTime(`${currentDate}T${newTime}`);
+              }}
+              className="rounded-lg border border-gray-500 bg-white p-3 text-black"
+            >
+              {availableTimes.map((time) => (
+                <option key={time} value={time}>
+                  {time}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-        <Input
-          label={t.appointments?.endTime || 'End Time'}
-          element="endTime"
-          type="datetime-local"
-          value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
-          required
-        />
+        <div className="flex gap-x-4">
+          <Input
+            label={t.appointments?.endTime || 'End Time'}
+            element="endTimeDate"
+            type="date"
+            value={dayjs(endTime).format('YYYY-MM-DD')}
+            onChange={(e) => {
+              const newDate = e.target.value;
+              const currentTime = dayjs(endTime).format('HH:mm');
+              setEndTime(`${newDate}T${currentTime}`);
+            }}
+            required
+            containerClassName="flex-1"
+          />
+          <div className="flex flex-1 flex-col gap-y-1">
+            <label className="text-xs text-white">
+              {t.appointments?.endTime || 'End Time'}
+            </label>
+            <select
+              value={dayjs(endTime).format('HH:mm')}
+              onChange={(e) => {
+                const newTime = e.target.value;
+                const currentDate = dayjs(endTime).format('YYYY-MM-DD');
+                setEndTime(`${currentDate}T${newTime}`);
+              }}
+              className="rounded-lg border border-gray-500 bg-white p-3 text-black"
+            >
+              {availableTimes.map((time) => (
+                <option key={time} value={time}>
+                  {time}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         <div className="flex gap-x-3 mt-4">
           <Button
-            label={t.cancel || 'Cancel'}
+            label={t?.edit?.cancel || 'Cancel'}
             onClick={closeDialog}
             type="button"
             className="w-full rounded-full"
             iconName="cancel"
           />
           <Button
-            label={t.save || 'Save'}
+            label={t?.edit?.save || 'Save'}
             type="submit"
             className="w-full rounded-full"
             iconName="save"

@@ -9,16 +9,21 @@ import BaseWidget from './BaseWidget';
 
 dayjs.extend(isoWeek);
 
-export function AppointmentWidget({ appointments }: { appointments: {
-  id: number;
-  start_time: string;
-  end_time: string;
-  patient?: {
-    first_name: string;
-    last_name: string;
-  };
-}[] }) {
-  const t = useDictionary();
+export function AppointmentWidget({
+  appointments,
+}: {
+  appointments: {
+    id: number;
+    start_time: string;
+    end_time: string;
+    patient?: {
+      first_name: string;
+      last_name: string;
+    };
+  }[];
+}) {
+  const dictionary = useDictionary();
+  const t = dictionary?.appointments;
   const today = dayjs();
   const startOfWeek = today.startOf('isoWeek');
   const days = Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, 'day'));
@@ -31,7 +36,7 @@ export function AppointmentWidget({ appointments }: { appointments: {
     <BaseWidget>
       <div className="flex flex-col gap-4">
         <h3 className="text-lg font-semibold border-b pb-2">
-            {t.appointments?.appointmentsHeadline || 'Upcoming Appointments'}
+          {t?.appointmentsHeadline || 'Upcoming Appointments'}
         </h3>
 
         <div className="grid grid-cols-7 gap-1 mb-4">
@@ -72,7 +77,7 @@ export function AppointmentWidget({ appointments }: { appointments: {
         </div>
 
         <Button
-          label={t.appointments?.goToCalendar || 'Go to calendar'}
+          label={t?.goToCalendar || 'Go to calendar'}
           href={APPOINTMENTS_PATH}
           className="mt-2"
           iconName="calendar_today"

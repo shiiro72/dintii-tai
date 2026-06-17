@@ -17,7 +17,6 @@ import {
 import { ROWS_TO_LOAD } from '@/types/GlobalTypes';
 import { Loading } from '../Loading';
 import { toggleTODOItemDone } from '@/supabase/actions/todoListActions';
-import { deleteTreatment } from '@/supabase/actions/treatmentActions';
 
 type EditableTableProps = {
   data: SupabaseArray;
@@ -74,7 +73,8 @@ export default function EditableTable(props: SpecificTableProps) {
     deleteDialogMessage,
   } = props;
 
-  const t = useDictionary();
+  const dictionary = useDictionary();
+  const t = dictionary;
   let filledFormFields = formFields;
 
   const headers = data?.length
@@ -192,7 +192,7 @@ export default function EditableTable(props: SpecificTableProps) {
           {addSearchBar && (
             <div className='relative flex items-center md:justify-end'>
               <Input
-                label={t.search}
+                label={t?.general?.search || 'Search'}
                 element='searchTerm'
                 value={searchTerm}
                 labelClassName='!ml-9 !text-font'
@@ -248,23 +248,21 @@ export default function EditableTable(props: SpecificTableProps) {
                             sortDataByHeader(header, newSortOrder);
                           }}
                           label={
-                            (typeof t?.[
-                              convertSnakeToCamelCase(header) as keyof typeof t
+                            (typeof (t as unknown as Record<string, string | null>)?.[
+                              convertSnakeToCamelCase(header)
                             ] === 'string'
-                              ? (t?.[
-                                  convertSnakeToCamelCase(
-                                    header
-                                  ) as keyof typeof t
+                              ? ((t as unknown as Record<string, string | null>)?.[
+                                  convertSnakeToCamelCase(header)
                                 ] as string)
                               : null) ?? header
                           }
                         />
                       ) : (
-                        (typeof t?.[
-                          convertSnakeToCamelCase(header) as keyof typeof t
+                        (typeof (t as unknown as Record<string, string | null>)?.[
+                          convertSnakeToCamelCase(header)
                         ] === 'string'
-                          ? (t?.[
-                              convertSnakeToCamelCase(header) as keyof typeof t
+                          ? ((t as unknown as Record<string, string | null>)?.[
+                              convertSnakeToCamelCase(header)
                             ] as string)
                           : null) ?? header
                       )}
@@ -331,15 +329,11 @@ export default function EditableTable(props: SpecificTableProps) {
                               />
                             ) : useHeaderTranslationForRows.includes(header) &&
                               entry[header] != undefined ? (
-                              (typeof t?.[
-                                convertSnakeToCamelCase(
-                                  header
-                                ) as keyof typeof t
+                              (typeof (t as unknown as Record<string, string | null>)?.[
+                                convertSnakeToCamelCase(header)
                               ] === 'string'
-                                ? (t?.[
-                                    convertSnakeToCamelCase(
-                                      header
-                                    ) as keyof typeof t
+                                ? ((t as unknown as Record<string, string | null>)?.[
+                                    convertSnakeToCamelCase(header)
                                   ] as string)
                                 : null) ?? header
                             ) : (
@@ -357,8 +351,7 @@ export default function EditableTable(props: SpecificTableProps) {
                                 label=''
                                 addMessage={addMessage || ''}
                                 editMessage={
-                                  (t[editMessage as keyof typeof t] as string) ??
-                                  ''
+                                  ((t as unknown as Record<string, string | null>)?.[editMessage] as string) ?? ''
                                 }
                                 buttonAddIconName={buttonAddIconName || ''}
                               />
@@ -376,9 +369,7 @@ export default function EditableTable(props: SpecificTableProps) {
                                 className='!text-red-700 hover:!text-red-500'
                                 asLink
                                 dialogHeadline={
-                                  (t[
-                                    deleteMessage as keyof typeof t
-                                  ] as string) ?? ''
+                                  ((t as unknown as Record<string, string | null>)?.[deleteMessage] as string) ?? ''
                                 }
                               />
                             ) : undefined}
@@ -401,13 +392,13 @@ export default function EditableTable(props: SpecificTableProps) {
 }
 
 export function EditablePatientTable(props: EditableTableProps) {
-  const { emptyPatientData } = useDictionary();
+  const dictionary = useDictionary();
 
   return (
     <EditableTable
       deleteMessage='deletePatient'
       editMessage='editPatient'
-      emptyTableMessage={emptyPatientData ?? ''}
+      emptyTableMessage={dictionary?.feedback?.emptyPatientData || ''}
       addSearchBar={true}
       unsortableHeaders={['phone', 'deletePatient', 'editPatient']}
       {...props}
@@ -415,40 +406,52 @@ export function EditablePatientTable(props: EditableTableProps) {
   );
 }
 
+export function EditableAppointmentTable(props: EditableTableProps) {
+  const dictionary = useDictionary();
+
+  return (
+    <EditableTable
+      emptyTableMessage={dictionary?.feedback?.emptyPatientData || ''}
+      initialSortOrder='desc'
+      unsortableHeaders={['phone_number', 'patient_id']}
+      excludedHeaders={['id', 'patient_id', 'created_at']}
+      {...props}
+    />
+  );
+}
+
 export function EditableTreatmentTable(props: EditableTableProps) {
-  const { emptyTreatmentData, addTreatment, deleteTreatmentMessage } =
-    useDictionary();
+  const dictionary = useDictionary();
 
   return (
     <EditableTable
       deleteMessage='deleteTreatment'
       editMessage='editTreatment'
-      emptyTableMessage={emptyTreatmentData ?? ''}
+      emptyTableMessage={dictionary?.feedback?.emptyTreatmentData || ''}
       initialSortOrder='desc'
       unsortableHeaders={['deleteTreatment', 'editTreatment']}
-      addMessage={addTreatment ?? ''}
+      addMessage={dictionary?.edit?.addTreatment || ''}
       buttonAddIconName='post_add'
-      deleteDialogMessage={deleteTreatmentMessage ?? ''}
-      deleteAction={deleteTreatment}
+      deleteDialogMessage={dictionary?.feedback?.deleteTreatmentMessage || ''}
       {...props}
     />
   );
 }
 
 export function EditableTODOListTable(props: EditableTableProps) {
-  const { addTODOItem, emptyTODOList, deleteTODOItemMessage } = useDictionary();
+  const dictionary = useDictionary();
 
   return (
     <EditableTable
       deleteMessage='deleteTODOItem'
       editMessage='editTODOItem'
-      addMessage={addTODOItem ?? ''}
-      emptyTableMessage={emptyTODOList ?? 'No TODO items.'}
+      addMessage={dictionary?.todo?.addTODOItem || ''}
+      emptyTableMessage={dictionary?.todo?.emptyTODOList || 'No TODO items.'}
       excludedHeaders={['id']}
       unsortableHeaders={['deleteTODOItem', 'editTODOItem']}
       useHeaderTranslationForRows={['done']}
       buttonAddIconName='add_task'
-      deleteDialogMessage={deleteTODOItemMessage ?? ''}
+      deleteDialogMessage={dictionary?.todo?.deleteTODOItemMessage || ''}
       clickableCell={{
         clickableCellHeader: 'done',
         clickableCellFunction: (rowData) =>

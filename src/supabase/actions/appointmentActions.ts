@@ -37,6 +37,30 @@ export async function getAppointments(startDate?: string, endDate?: string) {
   return data;
 }
 
+export async function getPatientAppointments(
+  patientId: number,
+  from = 0,
+  to = 100,
+  ascending = false,
+  element = 'start_time'
+) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from(APPOINTMENT_DATABASE)
+    .select('*')
+    .eq('patient_id', patientId)
+    .order(element, { ascending: ascending })
+    .range(from, to);
+
+  if (error) {
+    console.error('Error fetching patient appointments:', error);
+    throw error;
+  }
+
+  return data;
+}
+
 export async function addAppointment(formData: FormData) {
   const supabase = await createClient();
 

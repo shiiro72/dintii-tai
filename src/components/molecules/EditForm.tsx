@@ -30,7 +30,7 @@ export default function EditForm({
   notificationMessage,
   ...rest
 }: EditFormProps) {
-  const { save, cancel, errorMessage, successMessage } = useDictionary();
+  const dictionary = useDictionary(); const { save, cancel } = dictionary?.edit || {}; const { errorMessage, successMessage } = dictionary?.feedback || {};
 
   const { handleClick, closeDialog, showFeedback } = useDialog();
 
@@ -127,7 +127,7 @@ export default function EditForm({
 }
 
 export function EditPatientForm(props: BaseEditFormProps) {
-  const { addPatient, editPatient, patientAdultNotification } = useDictionary();
+  const dictionary = useDictionary(); const { addPatient, editPatient } = dictionary?.edit || {}; const { patientAdultNotification } = dictionary?.form || {};
 
   return (
     <EditForm
@@ -141,7 +141,7 @@ export function EditPatientForm(props: BaseEditFormProps) {
 }
 
 export function EditTreatmentForm(props: BaseEditFormProps) {
-  const { addTreatment, editTreatment } = useDictionary();
+  const dictionary = useDictionary(); const { addTreatment, editTreatment } = dictionary?.edit || {};
 
   return (
     <EditForm
@@ -154,7 +154,7 @@ export function EditTreatmentForm(props: BaseEditFormProps) {
 }
 
 export function EditTODOForm(props: BaseEditFormProps) {
-  const { addTODOItem, editTODOItem } = useDictionary();
+  const dictionary = useDictionary(); const { addTODOItem, editTODOItem } = dictionary?.todo || {};
 
   return (
     <EditForm

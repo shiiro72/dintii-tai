@@ -203,6 +203,7 @@ export const FULL_DICTIONARY_QUERY = defineQuery(`{
     "firstName": firstName[_key == $language][0].value,
     "lastName": lastName[_key == $language][0].value,
     "phone": phone[_key == $language][0].value,
+    "email": email[_key == $language][0].value,
     "city": city[_key == $language][0].value,
     "county": county[_key == $language][0].value,
     "patientFile": patientFile[_key == $language][0].value,

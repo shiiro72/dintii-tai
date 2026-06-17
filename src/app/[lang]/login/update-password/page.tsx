@@ -6,7 +6,9 @@ import { useDictionary } from '@/components/providers/DictionaryProvider';
 import { updatePassword } from '@/supabase/actions/userActions';
 
 export default function UpdateForm() {
-  const { updatePassword: updatePasswordText } = useDictionary();
+  const dictionary = useDictionary();
+  const updatePasswordText = dictionary?.form?.updatePassword;
+
   return (
     <Dialog
       headline={updatePasswordText ?? 'Update Password'}

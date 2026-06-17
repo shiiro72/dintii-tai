@@ -10,6 +10,8 @@ import AppointmentModal from '../Modals/AppointmentModal';
 import { deleteAppointment } from '@/supabase/actions/appointmentActions';
 import DeleteButton from '@/components/molecules/DeleteButton';
 import { getWhatsAppLink } from '@/helpers';
+import { PATIENTS_PATH } from '@/types/GlobalTypes';
+import NextLink from 'next/link';
 
 dayjs.extend(isoWeek);
 
@@ -43,7 +45,8 @@ export default function AppointmentCalendar({
       birthdate: string | null;
   }[];
 }) {
-  const t = useDictionary();
+  const dictionary = useDictionary();
+  const t = dictionary;
   const { handleClick, closeDialog, showFeedback } = useDialog();
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [viewMode, setViewMode] = useState<ViewMode>('week');
@@ -63,10 +66,19 @@ export default function AppointmentCalendar({
   };
 
   const handleSlotClick = (date: dayjs.Dayjs, hour: number) => {
+    if (date.isBefore(dayjs().startOf('day'))) return;
+
     const selectedDate = date.hour(hour).minute(0).second(0).toDate();
     handleClick(
-      <AppointmentModal patients={patients} selectedDate={selectedDate} />,
-      t.appointments?.addAppointment || 'Add Appointment'
+      <AppointmentModal
+        patients={patients}
+        selectedDate={selectedDate}
+        onSave={() => {
+            // refresh data
+        }}
+        initialAppointments={appointments}
+      />,
+      t?.appointments?.addAppointment || 'Add Appointment'
     );
   };
 
@@ -87,7 +99,7 @@ export default function AppointmentCalendar({
           className="w-full rounded-full"
         />
         <Button
-          label={t.cancel || 'Cancel'}
+          label={t?.edit?.cancel || 'Cancel'}
           onClick={closeDialog}
           className="w-full rounded-full"
           iconName="cancel"
@@ -102,51 +114,66 @@ export default function AppointmentCalendar({
       <AppointmentModal
         appointment={app}
         patients={patients}
+        initialAppointments={appointments}
       />,
-      t.appointments?.editAppointment || 'Edit Appointment'
+      t?.appointments?.editAppointment || 'Edit Appointment'
     );
   };
 
   const handleDelete = async (id: number) => {
     try {
       await deleteAppointment(id);
-      showFeedback('success', t.successMessage || 'Deleted successfully');
+      showFeedback('success', t?.feedback?.successMessage || 'Deleted successfully');
     } catch (error) {
-      showFeedback('error', `${t.errorMessage} ${error}`);
+      showFeedback('error', `${t?.feedback?.errorMessage} ${error}`);
     }
   };
 
   const renderMonthView = () => (
     <div className="grid grid-cols-7 gap-1">
-      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-        <div key={d} className="text-center font-bold p-2 bg-base-dark text-white">{d}</div>
-      ))}
-      {Array.from({ length: (startOfMonth.isoWeekday() - 1) }).map((_, i) => (
-        <div key={`empty-${i}`} className="p-4 bg-gray-50 border border-gray-100"></div>
-      ))}
-      {monthDays.map(day => (
-        <div key={day.toString()} className="min-h-[100px] p-1 border border-gray-100 bg-white relative">
-          <span className="text-sm text-gray-500">{day.date()}</span>
-          <div className="flex flex-col gap-1 mt-1">
-            {getAppointmentsForDate(day).map(app => (
-              <div
-                key={app.id}
-                className="text-[10px] p-1 bg-blue-100 text-blue-800 rounded truncate cursor-pointer"
-                onClick={() => handleEditAppointment(app)}
-              >
-                {dayjs(app.start_time).format('HH:mm')} {app.patient?.last_name}
-              </div>
-            ))}
-          </div>
-          <div
-            className="absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10"
-            onClick={() => {
-              setCurrentDate(day);
-              setViewMode('day');
-            }}
-          />
+      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+        <div
+          key={d}
+          className="bg-base-dark p-2 text-center font-bold text-white"
+        >
+          {d}
         </div>
       ))}
+      {Array.from({ length: startOfMonth.isoWeekday() - 1 }).map((_, i) => (
+        <div key={`empty-${i}`} className="border border-gray-100 bg-gray-50 p-4"></div>
+      ))}
+      {monthDays.map((day) => {
+        const isPast = day.isBefore(dayjs().startOf('day'));
+        return (
+          <div
+            key={day.toString()}
+            className={`relative min-h-[100px] border border-gray-100 p-1 ${isPast ? 'bg-gray-200 grayscale opacity-60' : 'bg-white'}`}
+          >
+            <span className="text-sm text-gray-500">{day.date()}</span>
+            <div className="relative z-10 mt-1 flex flex-col gap-1">
+              {getAppointmentsForDate(day).map((app) => (
+                <div
+                  key={app.id}
+                  className="cursor-pointer truncate rounded bg-blue-100 p-1 text-[10px] text-blue-800"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditAppointment(app);
+                  }}
+                >
+                  {dayjs(app.start_time).format('HH:mm')} {app.patient?.last_name}
+                </div>
+              ))}
+            </div>
+            <div
+              className="absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10"
+              onClick={() => {
+                setCurrentDate(day);
+                setViewMode('day');
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -201,7 +228,13 @@ export default function AppointmentCalendar({
                       >
                         <div className="font-bold flex justify-between items-start">
                           <span className="truncate mr-1">
-                            {start.format('HH:mm')} - {app.patient?.first_name} {app.patient?.last_name}
+                            {start.format('HH:mm')} -{' '}
+                            <NextLink
+                              href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
+                              className="cursor-pointer hover:underline"
+                            >
+                              {app.patient?.first_name} {app.patient?.last_name}
+                            </NextLink>
                           </span>
                           <div
                             className="flex shrink-0 gap-1"
@@ -218,12 +251,12 @@ export default function AppointmentCalendar({
                             <DeleteButton
                               deleteAction={() => handleDelete(app.id)}
                               message={
-                                t.appointments?.deleteAppointmentMessage ||
+                                t?.appointments?.deleteAppointmentMessage ||
                                 'Delete this appointment?'
                               }
                               asLink
                               dialogHeadline={
-                                t.appointments?.deleteAppointment ||
+                                t?.appointments?.deleteAppointment ||
                                 'Delete Appointment'
                               }
                               iconClassName="!text-xs"
@@ -285,9 +318,12 @@ export default function AppointmentCalendar({
                        >
                          <div>
                             <span className="font-bold">{dayjs(app.start_time).format('HH:mm')} - {dayjs(app.end_time).format('HH:mm')}</span>
-                            <span className="ml-3 font-semibold">
+                            <NextLink
+                              href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
+                              className="ml-3 cursor-pointer font-semibold hover:underline"
+                            >
                               {app.patient?.first_name} {app.patient?.last_name}
-                            </span>
+                            </NextLink>
                             {app.phone_number && (
                               <span
                                 className="ml-3 cursor-pointer text-xs italic hover:underline"
@@ -305,9 +341,9 @@ export default function AppointmentCalendar({
                              <Button iconName="edit" asLink onClick={() => handleEditAppointment(app)} />
                              <DeleteButton
                                 deleteAction={() => handleDelete(app.id)}
-                                message={t.appointments?.deleteAppointmentMessage || 'Delete this appointment?'}
+                                message={t?.appointments?.deleteAppointmentMessage || 'Delete this appointment?'}
                                 asLink
-                                 dialogHeadline={t.appointments?.deleteAppointment || 'Delete Appointment'}
+                                 dialogHeadline={t?.appointments?.deleteAppointment || 'Delete Appointment'}
                              />
                          </div>
                        </div>
@@ -346,7 +382,7 @@ export default function AppointmentCalendar({
           ))}
         </div>
         <Button
-            label={t.appointments?.addAppointment || 'Add Appointment'}
+            label={t?.appointments?.addAppointment || 'Add Appointment'}
             iconName="add"
             onClick={() => handleSlotClick(currentDate, 9)}
             className="rounded-full"

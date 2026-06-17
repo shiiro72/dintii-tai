@@ -1,10 +1,7 @@
 'use client';
 
 import NavigationGroup from '../molecules/NavigationGroup';
-import {
-  defaultDictionaryEntries,
-  useDictionary,
-} from '../providers/DictionaryProvider';
+import { useDictionary } from '../providers/DictionaryProvider';
 import { useState } from 'react';
 import { signOut } from '@/supabase/actions/userActions';
 import {
@@ -22,60 +19,52 @@ export default function Sidebar({ menuOpen, setMenuOpen }: MenuProps) {
   const dictionary = useDictionary();
   const [activeTab, setActiveTab] = useState<string | null>('');
 
-  const {
-    menu,
-    general,
-    addNewUser,
-    adults,
-    minors,
-    dashboard,
-    studio,
-    logout,
-    todoHeadline,
-    appointmentsLink,
-  } = dictionary || defaultDictionaryEntries;
+  const navigation = dictionary?.navigation;
+  const todo = dictionary?.todo;
+  const appointments = dictionary?.appointments;
+  const general = dictionary?.general;
 
   const menuLinks = [
     {
-      name: dashboard || '',
+      name: navigation?.dashboard || '',
       href: DASHBOARD_PATH,
       icon: 'dashboard',
     },
     {
-      name: adults || 'Adults',
+      name: navigation?.adults || 'Adults',
       href: `${PATIENTS_PATH}/adult`,
       icon: 'account_box',
     },
     {
-      name: minors || 'Minors',
+      name: navigation?.minors || 'Minors',
       href: `${PATIENTS_PATH}/minor`,
       icon: 'account_circle',
     },
     {
-      name: todoHeadline || 'To-Do List',
+      name: todo?.todoHeadline || 'To-Do List',
       href: TODOS_PATH,
       icon: 'check_box',
     },
     {
-      name: appointmentsLink || 'Appointments',
+      name: appointments?.appointmentsHeadline || 'Appointments',
       href: APPOINTMENTS_PATH,
       icon: 'calendar_month',
     },
   ];
   const generalLinks = [
     {
-      name: studio || '',
+      name: general?.studio || '',
       href: STUDIO_PATH,
       icon: 'edit_note',
       target: '_blank',
     },
     {
-      name: addNewUser || '',
+      name: navigation?.addNewUser || '',
       href: NEW_USER_PATH,
       icon: 'person_add',
     },
     {
-      name: logout || '',
+      name: navigation?.logout || '',
       onClick: () => {
         signOut();
       },
@@ -93,7 +82,7 @@ export default function Sidebar({ menuOpen, setMenuOpen }: MenuProps) {
     >
       <nav className='bg-base-dark h-full space-y-8 overflow-y-auto px-3 pb-4'>
         <NavigationGroup
-          groupTitle={menu ?? ''}
+          groupTitle={navigation?.menu ?? ''}
           navigationLinks={menuLinks}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -102,7 +91,7 @@ export default function Sidebar({ menuOpen, setMenuOpen }: MenuProps) {
         <NavigationGroup
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          groupTitle={general ?? ''}
+          groupTitle={navigation?.general ?? ''}
           navigationLinks={generalLinks}
           onClick={() => isTouchDevice() && setMenuOpen(false)}
         />

@@ -13,7 +13,8 @@ type ScheduleProps = {
 export default function ScheduleCard(props: ScheduleProps) {
   const { siteInfo } = props;
   const { timetable } = siteInfo;
-  const { schedule } = useDictionary();
+  const dictionary = useDictionary();
+  const schedule = dictionary?.general?.schedule;
 
   if (!timetable || !timetable.value) return null;
 

@@ -34,18 +34,20 @@ export default function UserForm({
   buttonLabel = 'Submit',
   darkMode = true,
 }: UserFormProps) {
+  const dictionary = useDictionary();
   const {
     login: loginEntry,
     email,
     password,
-    addNewUser,
     forgotPassword,
     resetPassword: resetPasswordText,
     updatePassword,
     confirmPassword,
     backToLogin,
     passwordDoNotMatch,
-  } = useDictionary();
+  } = dictionary?.form || {};
+
+  const { addNewUser } = dictionary?.navigation || {};
 
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);

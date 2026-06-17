@@ -1,12 +1,4 @@
 import {
-  DICTIONARY_EDIT_QUERYResult,
-  DICTIONARY_FEEDBACK_QUERYResult,
-  DICTIONARY_FORM_QUERYResult,
-  DICTIONARY_GENERAL_QUERYResult,
-  DICTIONARY_NAVIGATION_QUERYResult,
-  DICTIONARY_PATIENT_QUERYResult,
-  DICTIONARY_TODO_QUERYResult,
-  DICTIONARY_TREATMENT_QUERYResult,
   internalGroqTypeReferenceTo,
   SanityImageCrop,
   SanityImageHotspot,
@@ -38,28 +30,27 @@ export type NavigationLink = {
   onClick?: () => void;
 };
 
-export type DICTIONARY_QUERYResult = NonNullable<DICTIONARY_EDIT_QUERYResult> &
+import {
+  DICTIONARY_EDIT_QUERYResult,
+  DICTIONARY_FEEDBACK_QUERYResult,
+  DICTIONARY_FORM_QUERYResult,
+  DICTIONARY_GENERAL_QUERYResult,
+  DICTIONARY_NAVIGATION_QUERYResult,
+  DICTIONARY_PATIENT_QUERYResult,
+  DICTIONARY_TODO_QUERYResult,
+  DICTIONARY_TREATMENT_QUERYResult,
+  FULL_DICTIONARY_QUERYResult,
+} from '@/sanity/types';
+
+export type DICTIONARY_QUERYResult = FULL_DICTIONARY_QUERYResult &
+  NonNullable<DICTIONARY_EDIT_QUERYResult> &
   NonNullable<DICTIONARY_GENERAL_QUERYResult> &
   NonNullable<DICTIONARY_NAVIGATION_QUERYResult> &
   NonNullable<DICTIONARY_PATIENT_QUERYResult> &
   NonNullable<DICTIONARY_TREATMENT_QUERYResult> &
   NonNullable<DICTIONARY_FEEDBACK_QUERYResult> &
   NonNullable<DICTIONARY_FORM_QUERYResult> &
-  NonNullable<DICTIONARY_TODO_QUERYResult> &
-  {
-    appointments?: {
-      appointmentsHeadline: string | null;
-      goToCalendar: string | null;
-      selectPatient: string | null;
-      startTime: string | null;
-      endTime: string | null;
-      addAppointment: string | null;
-      editAppointment: string | null;
-      deleteAppointment: string | null;
-      deleteAppointmentMessage: string | null;
-    } | null;
-    appointmentsLink?: string | null;
-  };
+  NonNullable<DICTIONARY_TODO_QUERYResult>;
 
 export type SupabaseArray = { [key: string]: string }[] | [] | null;
 

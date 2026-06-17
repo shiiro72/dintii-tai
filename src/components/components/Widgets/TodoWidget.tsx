@@ -8,7 +8,8 @@ import BaseWidget from './BaseWidget';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
 
 export function TodoWidget({ data }: { data: SupabaseArray }) {
-  const { redirectToTodoPage } = useDictionary();
+  const dictionary = useDictionary();
+  const redirectToTodoPage = dictionary?.todo?.redirectToTodoPage;
 
   return (
     <BaseWidget>

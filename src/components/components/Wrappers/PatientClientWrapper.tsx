@@ -14,22 +14,32 @@ import { useDictionary } from '../../providers/DictionaryProvider';
 import TreatmentsOverview, {
   TreatmentsOverviewProps,
 } from '../Wrappers/TreatmentsOverview';
-import { PatientCategory } from '@/types/GeneralTypes';
+import { LoadRowsFunction, PatientCategory, SupabaseArray } from '@/types/GeneralTypes';
+import { EditableAppointmentTable } from '../Tables/EditableTable';
 
 type PatientClientWrapperProps = TreatmentsOverviewProps &
-  ProfileOverviewProps & { patientCategory: PatientCategory };
+  ProfileOverviewProps & {
+    patientCategory: PatientCategory;
+    appointments: SupabaseArray;
+    loadAppointmentRows: LoadRowsFunction;
+  };
 
 export default function PatientClientWrapper({
   patientID,
   data: treatments,
+  appointments,
   patient,
   addAction: addTreatment,
   editAction: editPatient,
   deleteAction: deletePatient,
   loadRows,
+  loadAppointmentRows,
   patientCategory,
 }: PatientClientWrapperProps) {
-  const { backToPatients, profile, treatment } = useDictionary();
+  const dictionary = useDictionary();
+  const { backToPatients, profile } = dictionary?.navigation || {};
+  const treatmentText = dictionary?.treatment?.treatment;
+  const appointmentsHeadline = dictionary?.appointments?.appointmentsHeadline;
   const { first_name, last_name } = patient;
 
   return (
@@ -55,13 +65,21 @@ export default function PatientClientWrapper({
             editAction={editPatient}
           />
         </Tab>
-        <Tab title={treatment ?? ''}>
+        <Tab title={treatmentText ?? ''}>
           <TreatmentsOverview
             data={treatments}
             addAction={addTreatment}
             loadRows={loadRows}
             patientID={patientID}
           />
+        </Tab>
+        <Tab title={appointmentsHeadline ?? ''}>
+          <div className='bg-background rounded-lg p-5 md:p-10'>
+            <EditableAppointmentTable
+              data={appointments}
+              loadRows={loadAppointmentRows}
+            />
+          </div>
         </Tab>
       </Tabs>
     </>

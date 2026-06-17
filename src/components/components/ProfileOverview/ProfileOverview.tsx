@@ -21,6 +21,7 @@ export default function ProfileOverview({
   deleteAction,
   editAction,
 }: ProfileOverviewProps) {
+  const dictionary = useDictionary();
   const {
     firstName,
     lastName,
@@ -32,7 +33,18 @@ export default function ProfileOverview({
     county,
     patientFile,
     gdpr,
-  } = useDictionary();
+  } = dictionary?.patient || {
+    firstName: null,
+    lastName: null,
+    phone: null,
+    email: null,
+    birthdate: null,
+    cnp: null,
+    city: null,
+    county: null,
+    patientFile: null,
+    gdpr: null,
+  };
 
   const [documentURL, setDocumentURL] = useState<string | null>(null);
   const [gdprDocumentURL, setGdprDocumentURL] = useState<string | null>(null);

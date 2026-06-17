@@ -15,12 +15,12 @@ import { useSiteInfo } from '../providers/SiteInfoProvider';
 import { RATES_PATH } from '@/types/GlobalTypes';
 
 export function Header() {
-  const t = useDictionary();
+  const dictionary = useDictionary();
   const navigationLinks = [
-    { name: t?.treatments, href: '/#treatment' },
-    { name: t?.aboutUs, href: '/#aboutus' },
-    { name: t?.contact, href: '/#contact' },
-    { name: t?.prices, href: RATES_PATH },
+    { name: dictionary?.treatment?.treatments, href: '/#treatment' },
+    { name: dictionary?.general?.aboutUs, href: '/#aboutus' },
+    { name: dictionary?.general?.contact, href: '/#contact' },
+    { name: dictionary?.general?.prices, href: RATES_PATH },
   ];
   const [menuOpen, setMenuOpen] = useState(false);
   const siteInfo = useSiteInfo();

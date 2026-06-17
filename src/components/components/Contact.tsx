@@ -14,7 +14,7 @@ type ContactProps = {
 };
 
 export default function Contact(props: ContactProps) {
-  const { contact } = useDictionary();
+  const dictionary = useDictionary(); const contact = dictionary?.general?.contact;
 
   if (!props) return undefined;
 

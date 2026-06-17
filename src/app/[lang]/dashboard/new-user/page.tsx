@@ -8,7 +8,8 @@ import { useDictionary } from '@/components/providers/DictionaryProvider';
 import { registerUser } from '@/supabase/actions/userActions';
 
 export default function NewUser() {
-  const { addNewUser } = useDictionary();
+  const dictionary = useDictionary();
+  const addNewUser = dictionary?.navigation?.addNewUser;
 
   return (
     <Container>

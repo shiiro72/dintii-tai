@@ -1,77 +1,95 @@
 'use client';
 
-import { DICTIONARY_QUERYResult } from '@/types/GeneralTypes';
+import { FULL_DICTIONARY_QUERYResult } from '@/sanity/types';
 import { createContext, useContext } from 'react';
 
-export const defaultDictionaryEntries: DICTIONARY_QUERYResult = {
-  prices: 'Prices',
-  aboutUs: 'About Us',
-  pricesTableTitle: 'Prices',
-  treatment: 'Treatment',
-  contact: 'Contact',
-  schedule: 'Schedule',
-  login: 'Login',
-  email: 'Email',
-  addNewUser: 'Add New User',
-  logout: 'Logout',
-  patients: 'Patients',
-  password: 'Password',
-  dashboard: 'Dashboard',
-  menu: 'Menu',
-  general: 'General',
-  firstName: 'First Name',
-  lastName: 'Last Name',
-  phone: 'Phone',
-  city: 'City',
-  county: 'County',
-  patientFile: 'Patient File',
-  birthdate: 'Birthdate',
-  date: 'Date',
-  price: 'Price',
-  gdpr: 'GDPR',
-  consentFile: 'Consent',
-  editPatient: 'Edit Patient',
-  addPatient: 'Add Patient',
-  deletePatient: 'Delete Patient',
-  editTreatment: 'Edit Treatment',
-  addTreatment: 'Add Treatment',
-  deleteTreatment: 'Delete Treatment',
-  profile: 'Profile',
-  save: 'Save',
-  cancel: 'Cancel',
-  cnp: 'CNP',
-  backToPatients: 'Back to patients overview',
-  successMessage: 'Saved Successfully',
-  errorMessage: 'Failed with following error',
-  deletePatientMessage: 'Are you sure you want to delete this patient?',
-  deleteTreatmentMessage: 'Are you sure you want to delete this treatment?',
-  yes: 'Yes',
-  no: 'No',
-  studio: 'Studio',
-  emptyPatientData: 'No patients have been added yet',
-  emptyTreatmentData: 'No treatments have been added yet',
-  search: 'Search',
-  adults: null,
-  minors: null,
-  backToLogin: null,
-  resetPassword: null,
-  updatePassword: null,
-  forgotPassword: null,
-  confirmPassword: null,
-  passwordDoNotMatch: null,
-  patientAdultNotification: null,
-  todoHeadline: 'To-Do List',
-  todo: 'To-Do',
-  comment: 'Comment',
-  done: 'Done',
-  deleteTODOItem: 'Delete TODO Item',
-  emptyTODOList: 'No TODO items have been added yet',
-  addTODOItem: 'Add To-Do',
-  editTODOItem: 'Edit To-Do',
-  redirectToTodoPage: 'Go to To-Do Page',
-  deleteTODOItemMessage:
-    'Are you sure you want to delete "{entry}" to-do item?',
-  treatments: 'Treatments',
+export const defaultDictionaryEntries: FULL_DICTIONARY_QUERYResult = {
+  navigation: {
+    dashboard: 'Dashboard',
+    patients: 'Patients',
+    adults: 'Adults',
+    minors: 'Minors',
+    menu: 'Menu',
+    general: 'General',
+    addNewUser: 'Add New User',
+    logout: 'Logout',
+    profile: 'Profile',
+    backToPatients: 'Back to patients overview',
+    appointmentsLink: 'Appointments',
+  },
+  general: {
+    aboutUs: 'About Us',
+    prices: 'Prices',
+    contact: 'Contact',
+    pricesTableTitle: 'Prices',
+    schedule: 'Schedule',
+    studio: 'Studio',
+    search: 'Search',
+  },
+  edit: {
+    addPatient: 'Add Patient',
+    editPatient: 'Edit Patient',
+    deletePatient: 'Delete Patient',
+    addTreatment: 'Add Treatment',
+    editTreatment: 'Edit Treatment',
+    deleteTreatment: 'Delete Treatment',
+    save: 'Save',
+    cancel: 'Cancel',
+  },
+  patient: {
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    phone: 'Phone',
+    email: 'Email',
+    city: 'City',
+    county: 'County',
+    patientFile: 'Patient File',
+    gdpr: 'GDPR',
+    birthdate: 'Birthdate',
+    cnp: 'CNP',
+  },
+  treatment: {
+    treatment: 'Treatment',
+    treatments: 'Treatments',
+    price: 'Price',
+    consentFile: 'Consent',
+    date: 'Date',
+  },
+  feedback: {
+    successMessage: 'Saved Successfully',
+    errorMessage: 'Failed with following error',
+    deletePatientMessage: 'Are you sure you want to delete this patient?',
+    deleteTreatmentMessage: 'Are you sure you want to delete this treatment?',
+    emptyPatientData: 'No patients have been added yet',
+    emptyTreatmentData: 'No treatments have been added yet',
+    yes: 'Yes',
+    no: 'No',
+  },
+  form: {
+    backToLogin: 'Back to Login',
+    resetPassword: 'Reset Password',
+    updatePassword: 'Update Password',
+    forgotPassword: 'Forgot Password',
+    login: 'Login',
+    email: 'Email',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
+    passwordDoNotMatch: 'Passwords do not match',
+    patientAdultNotification: 'Patient is an adult',
+  },
+  todo: {
+    todoHeadline: 'To-Do List',
+    todo: 'To-Do',
+    comment: 'Comment',
+    done: 'Done',
+    redirectToTodoPage: 'Go to To-Do Page',
+    editTODOItem: 'Edit To-Do',
+    deleteTODOItem: 'Delete TODO Item',
+    emptyTODOList: 'No TODO items have been added yet',
+    addTODOItem: 'Add To-Do',
+    deleteTODOItemMessage:
+      'Are you sure you want to delete "{entry}" to-do item?',
+  },
   appointments: {
     appointmentsHeadline: 'Upcoming Appointments',
     goToCalendar: 'Go to calendar',
@@ -81,21 +99,20 @@ export const defaultDictionaryEntries: DICTIONARY_QUERYResult = {
     addAppointment: 'Add Appointment',
     editAppointment: 'Edit Appointment',
     deleteAppointment: 'Delete Appointment',
-    deleteAppointmentMessage: 'Are you sure you want to delete this appointment?',
+    deleteAppointmentMessage:
+      'Are you sure you want to delete this appointment?',
   },
-  appointmentsLink: 'Appointments',
 };
 
-export const DictionaryContext = createContext<DICTIONARY_QUERYResult | null>(
-  defaultDictionaryEntries
-);
+export const DictionaryContext =
+  createContext<FULL_DICTIONARY_QUERYResult | null>(defaultDictionaryEntries);
 
 export default function DictionaryProvider({
   children,
   dictionaryEntries,
 }: {
   children: React.ReactNode;
-  dictionaryEntries: DICTIONARY_QUERYResult | null;
+  dictionaryEntries: FULL_DICTIONARY_QUERYResult | null;
 }) {
   return (
     <DictionaryContext.Provider
