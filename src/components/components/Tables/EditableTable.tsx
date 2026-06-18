@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { convertSnakeToCamelCase, replaceEntry } from '@/helpers';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
@@ -35,6 +35,7 @@ type EditableTableProps = {
   addSearchBar?: boolean;
   initialSortOrder?: SortOrder;
   loadRows?: LoadRowsFunction;
+  onEditClick?: (rowData: { [key: string]: string }) => void;
   unsortableHeaders?: string[];
   useHeaderTranslationForRows?: string[];
   patientCategory?: PatientCategory;
@@ -66,6 +67,7 @@ export default function EditableTable(props: SpecificTableProps) {
     addSearchBar = false,
     initialSortOrder = 'asc',
     loadRows,
+    onEditClick,
     unsortableHeaders = [],
     useHeaderTranslationForRows = [],
     patientCategory,
@@ -76,21 +78,24 @@ export default function EditableTable(props: SpecificTableProps) {
 
   const dictionary = useDictionary();
   const t = dictionary;
-  let filledFormFields = formFields;
 
-  const headers = data?.length
-    ? excludedHeaders
-      ? Object.keys(data[0]).filter((key) => !excludedHeaders.includes(key))
-      : Object.keys(data[0])
-    : null;
+  const headers = useMemo(() => {
+    const baseHeaders = data?.length
+      ? excludedHeaders
+        ? Object.keys(data[0]).filter((key) => !excludedHeaders.includes(key))
+        : Object.keys(data[0])
+      : [];
 
-  if (editAction && formFields) {
-    headers?.push(editMessage ?? 'Edit');
-  }
+    if (editAction && formFields) {
+      baseHeaders.push(editMessage ?? 'Edit');
+    }
 
-  if (deleteAction) {
-    headers?.push(deleteMessage ?? 'Delete');
-  }
+    if (deleteAction) {
+      baseHeaders.push(deleteMessage ?? 'Delete');
+    }
+
+    return baseHeaders;
+  }, [data, excludedHeaders, editAction, formFields, editMessage, deleteAction, deleteMessage]);
 
   const cellClasses = 'p-3 text-font text-base border-b border-font/20';
 
@@ -101,12 +106,13 @@ export default function EditableTable(props: SpecificTableProps) {
 
   const [containerRef, isVisible] = useElementInViewport();
 
-  const [rangeStart, setRangeStart] = useState(ROWS_TO_LOAD);
+  const rangeStartRef = useRef(ROWS_TO_LOAD);
+  const loadingRef = useRef(false);
   const [moreDataToLoad, setMoreDataToLoad] = useState(true);
 
   useEffect(() => {
     setTableData(data ?? []);
-    setRangeStart(ROWS_TO_LOAD);
+    rangeStartRef.current = ROWS_TO_LOAD;
 
     if ((data?.length ?? 0) <= ROWS_TO_LOAD - 1) {
       setMoreDataToLoad(false);
@@ -115,38 +121,48 @@ export default function EditableTable(props: SpecificTableProps) {
     }
   }, [data]);
 
+  const fetchData = useCallback(async () => {
+    if (!moreDataToLoad || loadingRef.current) return;
+
+    loadingRef.current = true;
+    const currentRangeStart = rangeStartRef.current;
+    const rangeTo = currentRangeStart + ROWS_TO_LOAD - 1;
+
+    try {
+      const newData = await loadRows?.({
+        from: currentRangeStart,
+        to: rangeTo,
+        ascending: sortOrder === 'asc',
+        element: sortedHeader ?? undefined,
+        category: patientCategory,
+      });
+
+      if (newData && newData?.length) {
+        rangeStartRef.current = currentRangeStart + ROWS_TO_LOAD;
+        setTableData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const filteredNewData = newData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...filteredNewData];
+        });
+
+        if (newData.length < ROWS_TO_LOAD) {
+          setMoreDataToLoad(false);
+        }
+      } else {
+        setMoreDataToLoad(false);
+      }
+    } finally {
+      loadingRef.current = false;
+    }
+  }, [moreDataToLoad, loadRows, sortOrder, sortedHeader, patientCategory]);
+
   useEffect(() => {
     if (!moreDataToLoad || !isVisible) return;
 
     fetchData();
-  }, [isVisible, tableData]);
-
-  async function fetchData() {
-    if (!moreDataToLoad) return;
-
-    const rangeTo = rangeStart + ROWS_TO_LOAD - 1;
-    setRangeStart(rangeTo + 1);
-
-    const newData = await loadRows?.({
-      from: rangeStart,
-      to: rangeTo,
-      ascending: sortOrder === 'asc',
-      element: sortedHeader ?? undefined,
-      category: patientCategory,
-    });
-
-    if (newData && newData?.length) {
-      setTableData((prevData) => {
-        const existingIds = new Set(prevData.map((item) => item.id));
-        const filteredNewData = newData.filter(
-          (item) => !existingIds.has(item.id)
-        );
-        return [...prevData, ...filteredNewData];
-      });
-    } else {
-      setMoreDataToLoad(false);
-    }
-  }
+  }, [isVisible, moreDataToLoad, fetchData]);
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return tableData;
@@ -163,14 +179,14 @@ export default function EditableTable(props: SpecificTableProps) {
       const initialHeader = headers[0];
       setSortedHeader(initialHeader);
     }
-  }, []);
+  }, [headers, sortedHeader]);
 
   async function sortDataByHeader(header: string, order: SortOrder) {
     if (!tableData) return;
 
     const newSortedData = await loadRows?.({
       from: 0,
-      to: rangeStart - 1,
+      to: rangeStartRef.current - 1,
       ascending: order === 'asc',
       element: header,
       category: patientCategory,
@@ -278,24 +294,24 @@ export default function EditableTable(props: SpecificTableProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredData?.map((entry, index) => {
+                {filteredData?.map((entry, rowIndex) => {
                   const { clickableCellHeader, clickableCellFunction } =
                     clickableCell || {};
 
                   return (
                     <tr
-                      key={index}
+                      key={rowIndex}
                       className={`hover:bg-background/50 ${onClickRow ? 'cursor-pointer' : ''}`}
                       onClick={() => onClickRow?.(entry)}
                     >
-                      {headers?.map((header, index) => {
-                        filledFormFields = formFields?.map((field) =>
+                      {headers.map((header, colIndex) => {
+                        const filledFormFields = formFields?.map((field) =>
                           !field.value
                             ? { ...field, value: entry[field.element] }
                             : field
-                        );
+                        ) || [];
 
-                        filledFormFields?.push({
+                        filledFormFields.push({
                           element: 'id',
                           label: 'id',
                           value: entry['id'],
@@ -305,7 +321,7 @@ export default function EditableTable(props: SpecificTableProps) {
 
                         return (
                           <td
-                            key={index}
+                            key={colIndex}
                             className={`${cellClasses} ${clickableCellHeader === header ? 'text-link hover:text-link-hover cursor-pointer font-semibold' : ''}`}
                             onClick={(e) => {
                               if (
@@ -350,29 +366,40 @@ export default function EditableTable(props: SpecificTableProps) {
                               header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
                             )}
 
-                            {header === editMessage &&
-                            editAction &&
-                            filledFormFields ? (
-                              <EditForm
-                                formFunctionality='edit'
-                                formAction={editAction}
-                                formFields={filledFormFields}
-                                asLink
-                                label=''
-                                addMessage={addMessage || ''}
-                                editMessage={
-                                  (() => {
-                                    const categories = Object.values(t || {});
-                                    for (const cat of categories) {
-                                      if (cat && typeof cat === 'object' && editMessage in cat) {
-                                        return (cat as Record<string, string>)[editMessage];
+                            {header === editMessage && (editAction || onEditClick) ? (
+                              onEditClick ? (
+                                <div onClick={(e) => e.stopPropagation()}>
+                                  <Button
+                                    iconName='edit'
+                                    asLink
+                                    onClick={() => {
+                                      onEditClick(entry);
+                                    }}
+                                    label=''
+                                  />
+                                </div>
+                              ) : editAction && filledFormFields ? (
+                                <EditForm
+                                  formFunctionality='edit'
+                                  formAction={editAction}
+                                  formFields={filledFormFields}
+                                  asLink
+                                  label=''
+                                  addMessage={addMessage || ''}
+                                  editMessage={
+                                    (() => {
+                                      const categories = Object.values(t || {});
+                                      for (const cat of categories) {
+                                        if (cat && typeof cat === 'object' && editMessage in cat) {
+                                          return (cat as Record<string, string>)[editMessage];
+                                        }
                                       }
-                                    }
-                                    return editMessage;
-                                  })()
-                                }
-                                buttonAddIconName={buttonAddIconName || ''}
-                              />
+                                      return editMessage;
+                                    })()
+                                  }
+                                  buttonAddIconName={buttonAddIconName || ''}
+                                />
+                              ) : undefined
                             ) : undefined}
 
                             {header === deleteMessage && deleteAction ? (
@@ -432,7 +459,7 @@ export function EditablePatientTable(props: EditableTableProps) {
   );
 }
 
-export function EditableAppointmentTable(props: EditableTableProps) {
+export function EditableAppointmentTable(props: EditableTableProps & { editMessage?: string; deleteMessage?: string }) {
   const dictionary = useDictionary();
 
   return (
@@ -440,7 +467,7 @@ export function EditableAppointmentTable(props: EditableTableProps) {
       emptyTableMessage={dictionary?.feedback?.emptyPatientData || ''}
       initialSortOrder='desc'
       unsortableHeaders={['phone_number', 'patient_id']}
-      excludedHeaders={['id', 'patient_id', 'created_at']}
+      excludedHeaders={['id', 'patient_id', 'created_at', 'phone_number']}
       {...props}
     />
   );
