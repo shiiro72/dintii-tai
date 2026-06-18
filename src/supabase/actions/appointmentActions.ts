@@ -7,9 +7,7 @@ import { APPOINTMENT_DATABASE, APPOINTMENTS_PATH } from '@/types/GlobalTypes';
 export async function getAppointments(startDate?: string, endDate?: string) {
   const supabase = await createClient();
 
-  let query = supabase
-    .from(APPOINTMENT_DATABASE)
-    .select(`
+  let query = supabase.from(APPOINTMENT_DATABASE).select(`
       *,
       patient (
         id,
@@ -48,7 +46,7 @@ export async function getPatientAppointments(
 
   const { data, error } = await supabase
     .from(APPOINTMENT_DATABASE)
-    .select('*')
+    .select()
     .eq('patient_id', patientId)
     .order(element, { ascending: ascending })
     .range(from, to);

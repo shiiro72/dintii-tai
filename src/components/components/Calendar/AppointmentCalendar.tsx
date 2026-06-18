@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
@@ -23,6 +23,7 @@ type AppointmentWithPatient = {
     start_time: string;
     end_time: string;
     phone_number: string | null;
+    status?: 'pending' | 'confirmed' | 'cancelled';
     patient?: {
         id: number;
         first_name: string;
@@ -55,7 +56,27 @@ export default function AppointmentCalendar({
 
   const startOfWeek = currentDate.startOf('isoWeek');
   const daysOfWeek = Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, 'day'));
-  const hours = Array.from({ length: 11 }).map((_, i) => 8 + i); // 8 to 18
+
+  const hours = useMemo(() => {
+    const defaultStart = 8;
+    const defaultEnd = 18;
+
+    if (initialAppointments.length === 0) {
+      return Array.from({ length: defaultEnd - defaultStart + 1 }).map((_, i) => defaultStart + i);
+    }
+
+    let minHour = defaultStart;
+    let maxHour = defaultEnd;
+
+    initialAppointments.forEach(app => {
+      const startHour = dayjs(app.start_time).hour();
+      const endHour = dayjs(app.end_time).hour();
+      if (startHour < minHour) minHour = startHour;
+      if (endHour > maxHour) maxHour = endHour;
+    });
+
+    return Array.from({ length: maxHour - minHour + 1 }).map((_, i) => minHour + i);
+  }, [initialAppointments]);
 
   const startOfMonth = currentDate.startOf('month');
   const endOfMonth = currentDate.endOf('month');
@@ -152,18 +173,26 @@ export default function AppointmentCalendar({
           >
             <span className={`text-sm ${isWeekend ? 'font-bold text-orange-600' : 'text-gray-500'}`}>{day.date()}</span>
             <div className="relative z-10 mt-1 flex flex-col gap-1">
-              {getAppointmentsForDate(day).map((app) => (
-                <div
-                  key={app.id}
-                  className="cursor-pointer truncate rounded bg-blue-100 p-1 text-[10px] text-blue-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditAppointment(app);
-                  }}
-                >
-                  {dayjs(app.start_time).format('HH:mm')} {app.patient?.last_name}
-                </div>
-              ))}
+                  {getAppointmentsForDate(day).map((app) => {
+                const isConfirmed = app.status === 'confirmed';
+                const isCancelled = app.status === 'cancelled';
+                return (
+                  <div
+                    key={app.id}
+                    className={`cursor-pointer truncate rounded p-1 text-[10px] ${
+                      isConfirmed ? 'bg-green-100 text-green-800' :
+                      isCancelled ? 'bg-red-100 text-red-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditAppointment(app);
+                    }}
+                  >
+                    {dayjs(app.start_time).format('HH:mm')} {app.patient?.last_name}
+                  </div>
+                );
+              })}
             </div>
             <div
               className="absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10"
@@ -219,6 +248,24 @@ export default function AppointmentCalendar({
                     const top = (start.minute() / 60) * 100;
                     const height = (durationMin / 60) * 100;
 
+                    const isConfirmed = app.status === 'confirmed';
+                    const isCancelled = app.status === 'cancelled';
+                    const isMinor = app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18;
+
+                    let bgColor = isMinor ? 'var(--color-appointment-minor-bg)' : 'var(--color-appointment-pending-bg)';
+                    let textColor = isMinor ? 'var(--color-appointment-minor-text)' : 'var(--color-appointment-pending-text)';
+                    let borderColor = isMinor ? 'var(--color-appointment-minor-border)' : 'var(--color-appointment-pending-border)';
+
+                    if (isConfirmed) {
+                      bgColor = 'var(--color-appointment-confirmed-bg)';
+                      textColor = 'var(--color-appointment-confirmed-text)';
+                      borderColor = 'var(--color-appointment-confirmed-border)';
+                    } else if (isCancelled) {
+                      bgColor = 'var(--color-appointment-cancelled-bg)';
+                      textColor = 'var(--color-appointment-cancelled-text)';
+                      borderColor = 'var(--color-appointment-cancelled-border)';
+                    }
+
                     return (
                       <div
                         key={app.id}
@@ -226,9 +273,9 @@ export default function AppointmentCalendar({
                         style={{
                           top: `${top}%`,
                           height: `${height}%`,
-                          backgroundColor: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#e9d5ff' : '#bfdbfe',
-                          color: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#6b21a8' : '#1e40af',
-                          borderLeft: `4px solid ${app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#a855f7' : '#3b82f6'}`
+                          backgroundColor: bgColor,
+                          color: textColor,
+                          borderLeft: `4px solid ${borderColor}`
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -314,22 +361,41 @@ export default function AppointmentCalendar({
                 </div>
                 <div className="flex-1 relative">
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-blue-500 cursor-pointer" />
-                    {getAppointmentsForDate(currentDate).filter(app => dayjs(app.start_time).hour() === hour).map(app => (
-                         <div
-                         key={app.id}
-                         className="absolute left-2 right-2 rounded p-2 text-sm z-10 flex justify-between items-center shadow-md border-l-4"
-                         style={{
-                           top: `${(dayjs(app.start_time).minute() / 60) * 100}%`,
-                           height: `${(dayjs(app.end_time).diff(dayjs(app.start_time), 'minute') / 60) * 100}%`,
-                           backgroundColor: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#f3e8ff' : '#dbeafe',
-                           color: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#581c87' : '#1e3a8a',
-                           borderColor: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#a855f7' : '#3b82f6'
-                         }}
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           handleEditAppointment(app);
-                         }}
-                       >
+                    {getAppointmentsForDate(currentDate).filter(app => dayjs(app.start_time).hour() === hour).map(app => {
+                         const isConfirmed = app.status === 'confirmed';
+                         const isCancelled = app.status === 'cancelled';
+                         const isMinor = app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18;
+
+                         let bgColor = isMinor ? 'var(--color-appointment-minor-bg)' : 'var(--color-appointment-pending-bg)';
+                         let textColor = isMinor ? 'var(--color-appointment-minor-text)' : 'var(--color-appointment-pending-text)';
+                         let borderColor = isMinor ? 'var(--color-appointment-minor-border)' : 'var(--color-appointment-pending-border)';
+
+                         if (isConfirmed) {
+                           bgColor = 'var(--color-appointment-confirmed-bg)';
+                           textColor = 'var(--color-appointment-confirmed-text)';
+                           borderColor = 'var(--color-appointment-confirmed-border)';
+                         } else if (isCancelled) {
+                           bgColor = 'var(--color-appointment-cancelled-bg)';
+                           textColor = 'var(--color-appointment-cancelled-text)';
+                           borderColor = 'var(--color-appointment-cancelled-border)';
+                         }
+
+                         return (
+                           <div
+                             key={app.id}
+                             className="absolute left-2 right-2 rounded p-2 text-sm z-10 flex justify-between items-center shadow-md border-l-4"
+                             style={{
+                               top: `${(dayjs(app.start_time).minute() / 60) * 100}%`,
+                               height: `${(dayjs(app.end_time).diff(dayjs(app.start_time), 'minute') / 60) * 100}%`,
+                               backgroundColor: bgColor,
+                               color: textColor,
+                               borderColor: borderColor
+                             }}
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               handleEditAppointment(app);
+                             }}
+                           >
                          <div>
                             <span className="font-bold">{dayjs(app.start_time).format('HH:mm')} - {dayjs(app.end_time).format('HH:mm')}</span>
                             <NextLink
@@ -361,8 +427,9 @@ export default function AppointmentCalendar({
                                  dialogHeadline={t?.appointments?.deleteAppointment || 'Delete Appointment'}
                              />
                          </div>
-                       </div>
-                    ))}
+                           </div>
+                         );
+                    })}
                 </div>
              </div>
           ))}
