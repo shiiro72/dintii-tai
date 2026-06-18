@@ -5,9 +5,15 @@ import { APPOINTMENT_DATABASE } from '@/types/GlobalTypes';
 import dayjs from 'dayjs';
 
 export async function GET(request: Request) {
-  // Simple auth check for CRON trigger
+  // Auth check for CRON trigger (supports both custom secret and Vercel's internal cron header)
   const authHeader = request.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const vercelCronHeader = request.headers.get('x-vercel-cron');
+
+  const isAuthorized =
+    (process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`) ||
+    vercelCronHeader === '1';
+
+  if (!isAuthorized) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 

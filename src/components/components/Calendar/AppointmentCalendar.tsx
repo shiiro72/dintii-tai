@@ -252,18 +252,18 @@ export default function AppointmentCalendar({
                     const isCancelled = app.status === 'cancelled';
                     const isMinor = app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18;
 
-                    let bgColor = isMinor ? '#e9d5ff' : '#bfdbfe';
-                    let textColor = isMinor ? '#6b21a8' : '#1e40af';
-                    let borderColor = isMinor ? '#a855f7' : '#3b82f6';
+                    let bgColor = isMinor ? 'var(--color-appointment-minor-bg)' : 'var(--color-appointment-pending-bg)';
+                    let textColor = isMinor ? 'var(--color-appointment-minor-text)' : 'var(--color-appointment-pending-text)';
+                    let borderColor = isMinor ? 'var(--color-appointment-minor-border)' : 'var(--color-appointment-pending-border)';
 
                     if (isConfirmed) {
-                      bgColor = '#dcfce7';
-                      textColor = '#166534';
-                      borderColor = '#22c55e';
+                      bgColor = 'var(--color-appointment-confirmed-bg)';
+                      textColor = 'var(--color-appointment-confirmed-text)';
+                      borderColor = 'var(--color-appointment-confirmed-border)';
                     } else if (isCancelled) {
-                      bgColor = '#fee2e2';
-                      textColor = '#991b1b';
-                      borderColor = '#ef4444';
+                      bgColor = 'var(--color-appointment-cancelled-bg)';
+                      textColor = 'var(--color-appointment-cancelled-text)';
+                      borderColor = 'var(--color-appointment-cancelled-border)';
                     }
 
                     return (
@@ -366,18 +366,18 @@ export default function AppointmentCalendar({
                          const isCancelled = app.status === 'cancelled';
                          const isMinor = app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18;
 
-                         let bgColor = isMinor ? '#f3e8ff' : '#dbeafe';
-                         let textColor = isMinor ? '#581c87' : '#1e3a8a';
-                         let borderColor = isMinor ? '#a855f7' : '#3b82f6';
+                         let bgColor = isMinor ? 'var(--color-appointment-minor-bg)' : 'var(--color-appointment-pending-bg)';
+                         let textColor = isMinor ? 'var(--color-appointment-minor-text)' : 'var(--color-appointment-pending-text)';
+                         let borderColor = isMinor ? 'var(--color-appointment-minor-border)' : 'var(--color-appointment-pending-border)';
 
                          if (isConfirmed) {
-                           bgColor = '#f0fdf4';
-                           textColor = '#166534';
-                           borderColor = '#22c55e';
+                           bgColor = 'var(--color-appointment-confirmed-bg)';
+                           textColor = 'var(--color-appointment-confirmed-text)';
+                           borderColor = 'var(--color-appointment-confirmed-border)';
                          } else if (isCancelled) {
-                           bgColor = '#fef2f2';
-                           textColor = '#991b1b';
-                           borderColor = '#ef4444';
+                           bgColor = 'var(--color-appointment-cancelled-bg)';
+                           textColor = 'var(--color-appointment-cancelled-text)';
+                           borderColor = 'var(--color-appointment-cancelled-border)';
                          }
 
                          return (

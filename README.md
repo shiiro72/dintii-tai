@@ -37,10 +37,20 @@ Replies are handled automatically, and the system will send a confirmation or a 
 
 ### Automation (CRON)
 
-To trigger reminders daily at 18:00, set up a CRON job to call:
+The project includes a `vercel.json` file that automatically configures a Vercel Cron Job to trigger reminders daily at 18:00 (Romanian Time).
+
+If you are using another platform, set up a CRON job to call:
 `GET /api/webhook/whatsapp/reminders`
 
-Ensure you include the `Authorization: Bearer <CRON_SECRET>` header, where `<CRON_SECRET>` is an environment variable.
+Ensure you include the `Authorization: Bearer <CRON_SECRET>` header (where `<CRON_SECRET>` is an environment variable) OR ensure your platform sends the `x-vercel-cron: 1` header.
+
+### Styling & Colors
+
+Global colors for appointment statuses are defined in `src/app/globals.css` using CSS variables:
+- `--color-appointment-pending-*`
+- `--color-appointment-confirmed-*`
+- `--color-appointment-cancelled-*`
+- `--color-appointment-minor-*`
 
 ### Environment Variables
 
