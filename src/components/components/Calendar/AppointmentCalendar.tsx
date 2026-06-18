@@ -21,18 +21,18 @@ dayjs.extend(isoWeek);
 type ViewMode = 'month' | 'week' | 'day';
 
 type AppointmentWithPatient = {
+  id: number;
+  patient_id: number;
+  start_time: string;
+  end_time: string;
+  phone_number: string | null;
+  patient?: {
     id: number;
-    patient_id: number;
-    start_time: string;
-    end_time: string;
-    phone_number: string | null;
-    patient?: {
-        id: number;
-        first_name: string;
-        last_name: string;
-        phone: string;
-        birthdate: string | null;
-    };
+    first_name: string;
+    last_name: string;
+    phone: string;
+    birthdate: string | null;
+  };
 };
 
 export default function AppointmentCalendar({
@@ -73,10 +73,14 @@ export default function AppointmentCalendar({
 
   const startOfMonth = currentDate.startOf('month');
   const endOfMonth = currentDate.endOf('month');
-  const monthDays = Array.from({ length: endOfMonth.date() }).map((_, i) => startOfMonth.add(i, 'day'));
+  const monthDays = Array.from({ length: endOfMonth.date() }).map((_, i) =>
+    startOfMonth.add(i, 'day')
+  );
 
   const getAppointmentsForDate = (date: dayjs.Dayjs) => {
-    return appointments.filter(app => dayjs(app.start_time).isSame(date, 'day'));
+    return appointments.filter((app) =>
+      dayjs(app.start_time).isSame(date, 'day')
+    );
   };
 
   const handleSlotClick = (date: dayjs.Dayjs, hour: number) => {
@@ -88,7 +92,7 @@ export default function AppointmentCalendar({
         patients={patients}
         selectedDate={selectedDate}
         onSave={() => {
-            // refresh data
+          // refresh data
         }}
         initialAppointments={appointments}
       />,
@@ -98,25 +102,25 @@ export default function AppointmentCalendar({
 
   const handlePhoneClick = (phone: string) => {
     handleClick(
-      <div className="flex flex-col gap-y-4 p-4">
+      <div className='flex flex-col gap-y-4 p-4'>
         <Button
           label={`Call ${phone}`}
-          iconName="call"
+          iconName='call'
           href={`tel:${phone}`}
-          className="w-full rounded-full"
+          className='w-full rounded-full'
         />
         <Button
-          label="WhatsApp Message"
-          iconName="chat"
+          label='WhatsApp Message'
+          iconName='chat'
           href={getWhatsAppLink(phone)}
-          target="_blank"
-          className="w-full rounded-full"
+          target='_blank'
+          className='w-full rounded-full'
         />
         <Button
           label={t?.edit?.cancel || 'Cancel'}
           onClick={closeDialog}
-          className="w-full rounded-full"
-          iconName="cancel"
+          className='w-full rounded-full'
+          iconName='cancel'
         />
       </div>,
       'Phone Actions'
@@ -137,7 +141,10 @@ export default function AppointmentCalendar({
   const handleDelete = async (id: number) => {
     try {
       await deleteAppointment(id);
-      showFeedback('success', t?.feedback?.successMessage || 'Deleted successfully');
+      showFeedback(
+        'success',
+        t?.feedback?.successMessage || 'Deleted successfully'
+      );
     } catch (error) {
       showFeedback('error', `${t?.feedback?.errorMessage} ${error}`);
     }
@@ -145,15 +152,18 @@ export default function AppointmentCalendar({
 
   const renderMonthView = () => {
     const dayNames = Array.from({ length: 7 }).map((_, i) =>
-      dayjs().isoWeekday(i + 1).locale(lang).format('ddd')
+      dayjs()
+        .isoWeekday(i + 1)
+        .locale(lang)
+        .format('ddd')
     );
 
     return (
-      <div className="grid grid-cols-7 gap-1">
+      <div className='grid grid-cols-7 gap-1'>
         {dayNames.map((d) => (
           <div
             key={d}
-            className="bg-base-dark p-2 text-center font-bold text-white"
+            className='bg-base-dark p-2 text-center font-bold text-white'
           >
             {d}
           </div>
@@ -161,7 +171,7 @@ export default function AppointmentCalendar({
         {Array.from({ length: startOfMonth.isoWeekday() - 1 }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="border border-gray-100 bg-gray-50 p-4"
+            className='border border-gray-100 bg-gray-50 p-4'
           ></div>
         ))}
         {monthDays.map((day) => {
@@ -170,29 +180,30 @@ export default function AppointmentCalendar({
           return (
             <div
               key={day.toString()}
-              className={`relative min-h-[100px] border border-gray-100 p-1 ${isPast ? 'bg-gray-200 grayscale opacity-60' : isWeekend ? 'bg-orange-50' : 'bg-white'}`}
+              className={`relative min-h-[100px] border border-gray-100 p-1 ${isPast ? 'bg-gray-200 opacity-60 grayscale' : isWeekend ? 'bg-orange-50' : 'bg-white'}`}
             >
               <span
                 className={`text-sm ${isWeekend ? 'font-bold text-orange-600' : 'text-gray-500'}`}
               >
                 {day.date()}
               </span>
-              <div className="relative z-10 mt-1 flex flex-col gap-1">
+              <div className='relative z-10 mt-1 flex flex-col gap-1'>
                 {getAppointmentsForDate(day).map((app) => (
                   <div
                     key={app.id}
-                    className="cursor-pointer truncate rounded bg-blue-100 p-1 text-[10px] text-blue-800"
+                    className='cursor-pointer truncate rounded bg-blue-100 p-1 text-[10px] text-blue-800'
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEditAppointment(app);
                     }}
                   >
-                    {dayjs(app.start_time).format('HH:mm')} {app.patient?.last_name}
+                    {dayjs(app.start_time).format('HH:mm')}{' '}
+                    {app.patient?.last_name}
                   </div>
                 ))}
               </div>
               <div
-                className="absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10"
+                className='absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10'
                 onClick={() => {
                   setCurrentDate(day);
                   setViewMode('day');
@@ -206,9 +217,9 @@ export default function AppointmentCalendar({
   };
 
   const renderWeekView = () => (
-    <div className="flex flex-col overflow-x-auto">
-      <div className="flex border-b border-gray-200 min-w-[800px]">
-        <div className="w-20 flex-shrink-0"></div>
+    <div className='flex flex-col overflow-x-auto'>
+      <div className='flex min-w-[800px] border-b border-gray-200'>
+        <div className='w-20 flex-shrink-0'></div>
         {daysOfWeek.map((day) => {
           const isWeekend = day.day() === 0 || day.day() === 6;
           return (
@@ -217,29 +228,33 @@ export default function AppointmentCalendar({
               className={`flex-1 border-l border-gray-200 p-2 text-center ${day.isSame(dayjs(), 'day') ? 'bg-blue-50 font-bold' : isWeekend ? 'bg-orange-600 text-white' : 'bg-base-dark text-white'}`}
             >
               <div>{day.locale(lang).format('ddd')}</div>
-              <div className="text-sm">{day.format('DD/MM')}</div>
+              <div className='text-sm'>{day.format('DD/MM')}</div>
             </div>
           );
         })}
       </div>
-      <div className="flex flex-col min-w-[800px]">
-        {hours.map(hour => (
-          <div key={hour} className="flex border-b border-gray-100 h-20">
-            <div className="w-20 flex-shrink-0 text-right pr-2 text-gray-400 text-sm py-1">
+      <div className='flex min-w-[800px] flex-col'>
+        {hours.map((hour) => (
+          <div key={hour} className='flex h-20 border-b border-gray-100'>
+            <div className='w-20 flex-shrink-0 py-1 pr-2 text-right text-sm text-gray-400'>
               {hour}:00
             </div>
-            {daysOfWeek.map(day => {
-              const dayApps = getAppointmentsForDate(day).filter(app => dayjs(app.start_time).hour() === hour);
+            {daysOfWeek.map((day) => {
+              const dayApps = getAppointmentsForDate(day).filter(
+                (app) => dayjs(app.start_time).hour() === hour
+              );
               const isPast = day.isBefore(dayjs().startOf('day'));
               const isWeekend = day.day() === 0 || day.day() === 6;
               return (
                 <div
                   key={day.toString() + hour}
-                  className={`flex-1 border-l border-gray-100 relative group ${isPast ? 'bg-gray-100' : isWeekend ? 'bg-orange-50/30' : 'bg-white'}`}
+                  className={`group relative flex-1 border-l border-gray-100 ${isPast ? 'bg-gray-100' : isWeekend ? 'bg-orange-50/30' : 'bg-white'}`}
                   onClick={() => handleSlotClick(day, hour)}
                 >
-                  {!isPast && <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-blue-500 cursor-pointer" />}
-                  {dayApps.map(app => {
+                  {!isPast && (
+                    <div className='absolute inset-0 cursor-pointer bg-blue-500 opacity-0 group-hover:opacity-10' />
+                  )}
+                  {dayApps.map((app) => {
                     const start = dayjs(app.start_time);
                     const end = dayjs(app.end_time);
                     const durationMin = end.diff(start, 'minute');
@@ -249,41 +264,51 @@ export default function AppointmentCalendar({
                     return (
                       <div
                         key={app.id}
-                        className="absolute left-1 right-1 rounded p-1 text-xs overflow-hidden z-10 flex flex-col justify-between shadow-sm"
+                        className='absolute right-1 left-1 z-10 flex flex-col justify-between overflow-hidden rounded p-1 text-xs shadow-sm'
                         style={{
                           top: `${top}%`,
                           height: `${height}%`,
-                          backgroundColor: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#e9d5ff' : '#bfdbfe',
-                          color: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#6b21a8' : '#1e40af',
-                          borderLeft: `4px solid ${app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#a855f7' : '#3b82f6'}`
+                          backgroundColor:
+                            app.patient?.birthdate &&
+                            dayjs().diff(dayjs(app.patient.birthdate), 'year') <
+                              18
+                              ? '#e9d5ff'
+                              : '#bfdbfe',
+                          color:
+                            app.patient?.birthdate &&
+                            dayjs().diff(dayjs(app.patient.birthdate), 'year') <
+                              18
+                              ? '#6b21a8'
+                              : '#1e40af',
+                          borderLeft: `4px solid ${app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#a855f7' : '#3b82f6'}`,
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEditAppointment(app);
                         }}
                       >
-                        <div className="font-bold flex justify-between items-start">
-                          <span className="truncate mr-1">
+                        <div className='flex items-start justify-between font-bold'>
+                          <span className='mr-1 truncate'>
                             {start.format('HH:mm')} -{' '}
                             <NextLink
                               href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
-                              className="cursor-pointer hover:underline"
+                              className='cursor-pointer hover:underline'
                               onClick={(e) => e.stopPropagation()}
                             >
                               {app.patient?.first_name} {app.patient?.last_name}
                             </NextLink>
                           </span>
                           <div
-                            className="flex shrink-0 gap-1"
+                            className='flex shrink-0 gap-1'
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Button
-                              iconName="edit"
+                              iconName='edit'
                               asLink
                               onClick={() => {
                                 handleEditAppointment(app);
                               }}
-                              iconClassName="!text-xs"
+                              iconClassName='!text-xs'
                             />
                             <DeleteButton
                               deleteAction={() => handleDelete(app.id)}
@@ -296,13 +321,13 @@ export default function AppointmentCalendar({
                                 t?.appointments?.deleteAppointment ||
                                 'Delete Appointment'
                               }
-                              iconClassName="!text-xs"
+                              iconClassName='!text-xs'
                             />
                           </div>
                         </div>
                         {app.phone_number && (
                           <div
-                            className="cursor-pointer text-[10px] hover:underline"
+                            className='cursor-pointer text-[10px] hover:underline'
                             onClick={(e) => {
                               e.stopPropagation();
                               if (app.phone_number)
@@ -329,94 +354,131 @@ export default function AppointmentCalendar({
     const isPast = currentDate.isBefore(dayjs().startOf('day'));
 
     return (
-      <div className="flex flex-col">
+      <div className='flex flex-col'>
         <div
-          className={`text-center p-4 ${isWeekend ? 'bg-orange-600' : 'bg-base-dark'} text-white font-bold mb-4`}
+          className={`p-4 text-center ${isWeekend ? 'bg-orange-600' : 'bg-base-dark'} mb-4 font-bold text-white`}
         >
           {currentDate.locale(lang).format('dddd, MMMM D, YYYY')}
         </div>
-       <div className="flex flex-col border border-gray-200">
-          {hours.map(hour => (
-             <div key={hour} className={`flex border-b border-gray-100 h-24 ${isPast ? 'bg-gray-100' : isWeekend ? 'bg-orange-50' : 'bg-white'} relative group`} onClick={() => handleSlotClick(currentDate, hour)}>
-                <div className="w-24 flex-shrink-0 text-right pr-4 text-gray-400 font-medium py-2 border-r border-gray-100">
-                    {hour}:00
-                </div>
-                <div className="flex-1 relative">
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-5 bg-blue-500 cursor-pointer" />
-                    {getAppointmentsForDate(currentDate).filter(app => dayjs(app.start_time).hour() === hour).map(app => (
-                         <div
-                         key={app.id}
-                         className="absolute left-2 right-2 rounded p-2 text-sm z-10 flex justify-between items-center shadow-md border-l-4"
-                         style={{
-                           top: `${(dayjs(app.start_time).minute() / 60) * 100}%`,
-                           height: `${(dayjs(app.end_time).diff(dayjs(app.start_time), 'minute') / 60) * 100}%`,
-                           backgroundColor: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#f3e8ff' : '#dbeafe',
-                           color: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#581c87' : '#1e3a8a',
-                           borderColor: app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#a855f7' : '#3b82f6'
-                         }}
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           handleEditAppointment(app);
-                         }}
-                       >
-                         <div>
-                            <span className="font-bold">{dayjs(app.start_time).format('HH:mm')} - {dayjs(app.end_time).format('HH:mm')}</span>
-                            <NextLink
-                              href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
-                              className="ml-3 cursor-pointer font-semibold hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {app.patient?.first_name} {app.patient?.last_name}
-                            </NextLink>
-                            {app.phone_number && (
-                              <span
-                                className="ml-3 cursor-pointer text-xs italic hover:underline"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (app.phone_number)
-                                    handlePhoneClick(app.phone_number);
-                                }}
-                              >
-                                {app.phone_number}
-                              </span>
-                            )}
-                          </div>
-                         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                             <Button iconName="edit" asLink onClick={() => handleEditAppointment(app)} />
-                             <DeleteButton
-                                deleteAction={() => handleDelete(app.id)}
-                                message={t?.appointments?.deleteAppointmentMessage || 'Delete this appointment?'}
-                                asLink
-                                 dialogHeadline={t?.appointments?.deleteAppointment || 'Delete Appointment'}
-                             />
-                         </div>
-                       </div>
-                    ))}
-                </div>
-             </div>
+        <div className='flex flex-col border border-gray-200'>
+          {hours.map((hour) => (
+            <div
+              key={hour}
+              className={`flex h-24 border-b border-gray-100 ${isPast ? 'bg-gray-100' : isWeekend ? 'bg-orange-50' : 'bg-white'} group relative`}
+              onClick={() => handleSlotClick(currentDate, hour)}
+            >
+              <div className='w-24 flex-shrink-0 border-r border-gray-100 py-2 pr-4 text-right font-medium text-gray-400'>
+                {hour}:00
+              </div>
+              <div className='relative flex-1'>
+                <div className='absolute inset-0 cursor-pointer bg-blue-500 opacity-0 group-hover:opacity-5' />
+                {getAppointmentsForDate(currentDate)
+                  .filter((app) => dayjs(app.start_time).hour() === hour)
+                  .map((app) => (
+                    <div
+                      key={app.id}
+                      className='absolute right-2 left-2 z-10 flex items-center justify-between rounded border-l-4 p-2 text-sm shadow-md'
+                      style={{
+                        top: `${(dayjs(app.start_time).minute() / 60) * 100}%`,
+                        height: `${(dayjs(app.end_time).diff(dayjs(app.start_time), 'minute') / 60) * 100}%`,
+                        backgroundColor:
+                          app.patient?.birthdate &&
+                          dayjs().diff(dayjs(app.patient.birthdate), 'year') <
+                            18
+                            ? '#f3e8ff'
+                            : '#dbeafe',
+                        color:
+                          app.patient?.birthdate &&
+                          dayjs().diff(dayjs(app.patient.birthdate), 'year') <
+                            18
+                            ? '#581c87'
+                            : '#1e3a8a',
+                        borderColor:
+                          app.patient?.birthdate &&
+                          dayjs().diff(dayjs(app.patient.birthdate), 'year') <
+                            18
+                            ? '#a855f7'
+                            : '#3b82f6',
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditAppointment(app);
+                      }}
+                    >
+                      <div>
+                        <span className='font-bold'>
+                          {dayjs(app.start_time).format('HH:mm')} -{' '}
+                          {dayjs(app.end_time).format('HH:mm')}
+                        </span>
+                        <NextLink
+                          href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
+                          className='ml-3 cursor-pointer font-semibold hover:underline'
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {app.patient?.first_name} {app.patient?.last_name}
+                        </NextLink>
+                        {app.phone_number && (
+                          <span
+                            className='ml-3 cursor-pointer text-xs italic hover:underline'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (app.phone_number)
+                                handlePhoneClick(app.phone_number);
+                            }}
+                          >
+                            {app.phone_number}
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        className='flex gap-2'
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          iconName='edit'
+                          asLink
+                          onClick={() => handleEditAppointment(app)}
+                        />
+                        <DeleteButton
+                          deleteAction={() => handleDelete(app.id)}
+                          message={
+                            t?.appointments?.deleteAppointmentMessage ||
+                            'Delete this appointment?'
+                          }
+                          asLink
+                          dialogHeadline={
+                            t?.appointments?.deleteAppointment ||
+                            'Delete Appointment'
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
           ))}
-       </div>
-    </div>
+        </div>
+      </div>
     );
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-lg shadow-sm gap-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold text-base-dark">
+    <div className='flex flex-col gap-4'>
+      <div className='flex flex-col items-center justify-between gap-4 rounded-lg bg-white p-4 shadow-sm md:flex-row'>
+        <div className='flex items-center gap-4'>
+          <h2 className='text-base-dark text-xl font-bold'>
             {viewMode === 'month' &&
               currentDate.locale(lang).format('MMMM YYYY')}
             {viewMode === 'week' &&
-              (t?.appointments?.weekOf || 'Week of {date}').replace(
+              (t?.appointments?.weekOf + ' {date}' || 'Week of {date}').replace(
                 '{date}',
                 startOfWeek.locale(lang).format('MMM D, YYYY')
               )}
             {viewMode === 'day' && currentDate.locale(lang).format('LL')}
           </h2>
-          <div className="flex gap-1">
+          <div className='flex gap-1'>
             <Button
-              iconName="chevron_left"
+              iconName='chevron_left'
               asLink
               onClick={() => setCurrentDate(currentDate.subtract(1, viewMode))}
             />
@@ -426,18 +488,18 @@ export default function AppointmentCalendar({
               onClick={() => setCurrentDate(dayjs().locale(lang))}
             />
             <Button
-              iconName="chevron_right"
+              iconName='chevron_right'
               asLink
               onClick={() => setCurrentDate(currentDate.add(1, viewMode))}
             />
           </div>
         </div>
-        <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className='flex rounded-lg bg-gray-100 p-1'>
           {(['month', 'week', 'day'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`cursor-pointer px-4 py-1 rounded-md text-sm transition-all ${viewMode === mode ? 'bg-white shadow text-base-dark font-bold' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`cursor-pointer rounded-md px-4 py-1 text-sm transition-all ${viewMode === mode ? 'text-base-dark bg-white font-bold shadow' : 'text-gray-500 hover:text-gray-700'}`}
             >
               {t?.appointments?.[mode] ||
                 mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -445,14 +507,14 @@ export default function AppointmentCalendar({
           ))}
         </div>
         <Button
-            label={t?.appointments?.addAppointment || 'Add Appointment'}
-            iconName="add"
-            onClick={() => handleSlotClick(currentDate, 9)}
-            className="rounded-full"
+          label={t?.appointments?.addAppointment || 'Add Appointment'}
+          iconName='add'
+          onClick={() => handleSlotClick(currentDate, 9)}
+          className='rounded-full'
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className='overflow-hidden rounded-lg bg-white shadow-sm'>
         {viewMode === 'month' && renderMonthView()}
         {viewMode === 'week' && renderWeekView()}
         {viewMode === 'day' && renderDayView()}
