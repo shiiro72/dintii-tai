@@ -4,7 +4,7 @@ import { PatientType } from '@/types/PatientType';
 import { useDictionary } from '../../providers/DictionaryProvider';
 import ProfileField from './ProfileField';
 import { getPatientFileName, getWhatsAppLink } from '@/helpers';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getPatientFileURL } from '@/supabase/actions/bucketActions';
 import { EditPatientForm } from '@/components/molecules/EditForm';
 import { DeletePatientButton } from '@/components/molecules/DeleteButton';
@@ -60,20 +60,20 @@ export default function ProfileOverview({
     GDPR_FILENAME
   );
 
-  const getPatientFile = async () => {
+  const getPatientFile = useCallback(async () => {
     const url = await getPatientFileURL(filePath);
     setDocumentURL(url);
-  };
+  }, [filePath]);
 
-  const getGdprFile = async () => {
+  const getGdprFile = useCallback(async () => {
     const url = await getPatientFileURL(gdprFilePath);
     setGdprDocumentURL(url);
-  };
+  }, [gdprFilePath]);
 
   useEffect(() => {
     getPatientFile();
     getGdprFile();
-  }, [patient]);
+  }, [getPatientFile, getGdprFile]);
 
   const fieldValues = [
     { label: firstName, value: patient?.first_name },

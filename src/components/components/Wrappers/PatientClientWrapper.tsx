@@ -16,6 +16,11 @@ import TreatmentsOverview, {
 } from '../Wrappers/TreatmentsOverview';
 import { LoadRowsFunction, PatientCategory, SupabaseArray } from '@/types/GeneralTypes';
 import { EditableAppointmentTable } from '../Tables/EditableTable';
+import { Button } from '@/components/atoms/Button';
+import { useDialog } from '@/components/providers/DialogProvider';
+import AppointmentModal from '../Modals/AppointmentModal';
+import { deleteAppointment } from '@/supabase/actions/appointmentActions';
+import { useRouter } from 'next/navigation';
 
 type PatientClientWrapperProps = TreatmentsOverviewProps &
   ProfileOverviewProps & {
@@ -37,9 +42,17 @@ export default function PatientClientWrapper({
   patientCategory,
 }: PatientClientWrapperProps) {
   const dictionary = useDictionary();
+  const router = useRouter();
+  const { handleClick } = useDialog();
   const { backToPatients, profile } = dictionary?.navigation || {};
   const treatmentText = dictionary?.treatment?.treatment;
-  const appointmentsHeadline = dictionary?.appointments?.appointmentsHeadline;
+  const {
+    appointmentsHeadline,
+    addAppointment,
+    editAppointment: editAppointmentText,
+    deleteAppointment: deleteAppointmentText,
+    deleteAppointmentMessage,
+  } = dictionary?.appointments || {};
   const { first_name, last_name } = patient;
 
   return (
@@ -82,10 +95,87 @@ export default function PatientClientWrapper({
                   className='!mb-0 !text-2xl'
                 />
               </div>
+              <div className='flex h-fit flex-1 justify-end'>
+                <Button
+                  label={addAppointment || 'Add Appointment'}
+                  iconName='event'
+                  onClick={() =>
+                    handleClick(
+                      <AppointmentModal
+                        patients={[
+                          {
+                            id: patient.id as number,
+                            first_name: patient.first_name || '',
+                            last_name: patient.last_name || '',
+                            phone: patient.phone || '',
+                            birthdate: patient.birthdate || null,
+                          },
+                        ]}
+                        patientId={patientID}
+                        onSave={() => router.refresh()}
+                        initialAppointments={
+                          appointments as {
+                            id: number;
+                            start_time: string;
+                            end_time: string;
+                          }[]
+                        }
+                      />,
+                      addAppointment || 'Add Appointment'
+                    )
+                  }
+                />
+              </div>
             </div>
             <EditableAppointmentTable
               data={appointments}
               loadRows={loadAppointmentRows}
+              onEditClick={(rowData) =>
+                handleClick(
+                  <AppointmentModal
+                    appointment={{
+                      id: Number(rowData.id),
+                      patient_id: patientID,
+                      start_time: rowData.start_time,
+                      end_time: rowData.end_time,
+                      phone_number: rowData.phone_number,
+                      patient: {
+                        id: patient.id as number,
+                        first_name: patient.first_name || '',
+                        last_name: patient.last_name || '',
+                        phone: patient.phone || '',
+                        birthdate: patient.birthdate || null,
+                      },
+                    }}
+                    patients={[
+                      {
+                        id: patient.id as number,
+                        first_name: patient.first_name || '',
+                        last_name: patient.last_name || '',
+                        phone: patient.phone || '',
+                        birthdate: patient.birthdate || null,
+                      },
+                    ]}
+                    patientId={patientID}
+                    onSave={() => router.refresh()}
+                    initialAppointments={
+                      appointments as {
+                        id: number;
+                        start_time: string;
+                        end_time: string;
+                      }[]
+                    }
+                  />,
+                  editAppointmentText || 'Edit Appointment'
+                )
+              }
+              deleteAction={async (id) => {
+                await deleteAppointment(id);
+                router.refresh();
+              }}
+              editMessage={editAppointmentText ?? undefined}
+              deleteMessage={deleteAppointmentText ?? undefined}
+              deleteDialogMessage={deleteAppointmentMessage ?? undefined}
             />
           </div>
         </Tab>

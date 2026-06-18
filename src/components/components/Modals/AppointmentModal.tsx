@@ -37,6 +37,7 @@ type AppointmentModalProps = {
   };
   patients: Patient[];
   selectedDate?: Date;
+  patientId?: number;
   onSave?: () => void;
 };
 
@@ -44,6 +45,7 @@ export default function AppointmentModal({
   appointment,
   patients,
   selectedDate,
+  patientId,
   onSave,
   initialAppointments = [],
 }: AppointmentModalProps & {
@@ -55,26 +57,48 @@ export default function AppointmentModal({
 }) {
   const t = useDictionary();
   const { closeDialog, showFeedback } = useDialog();
-  const [searchTerm, setSearchTerm] = useState(
-    appointment?.patient
-      ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
-      : ''
-  );
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
-    appointment?.patient_id || null
+    appointment?.patient_id || patientId || null
   );
-  const [startTime, setStartTime] = useState(
-    appointment?.start_time
-      ? dayjs(appointment.start_time).format('YYYY-MM-DDTHH:mm')
+  const [searchTerm, setSearchTerm] = useState(() => {
+    if (appointment?.patient) {
+      return `${appointment.patient.first_name} ${appointment.patient.last_name}`;
+    }
+    if (patientId) {
+      const p = patients.find((p) => p.id === patientId);
+      return p ? `${p.first_name} ${p.last_name}` : '';
+    }
+    return '';
+  });
+  const [startTime, setStartTime] = useState(() => {
+    const initial = appointment?.start_time
+      ? dayjs(appointment.start_time)
       : selectedDate
-        ? dayjs(selectedDate).format('YYYY-MM-DDTHH:mm')
-        : dayjs().format('YYYY-MM-DDTHH:mm')
-  );
-  const [endTime, setEndTime] = useState(
-    appointment?.end_time
-      ? dayjs(appointment.end_time).format('YYYY-MM-DDTHH:mm')
-      : ''
-  );
+        ? dayjs(selectedDate)
+        : dayjs();
+    return initial.isValid()
+      ? initial.format('YYYY-MM-DDTHH:mm')
+      : dayjs().format('YYYY-MM-DDTHH:mm');
+  });
+
+  const [endTime, setEndTime] = useState(() => {
+    if (appointment?.end_time) {
+      const initial = dayjs(appointment.end_time);
+      if (initial.isValid()) return initial.format('YYYY-MM-DDTHH:mm');
+    }
+
+    const patient = patients.find((p) => p.id === selectedPatientId);
+    let duration = 30;
+    if (patient) {
+      const birthdate = patient.birthdate ? dayjs(patient.birthdate) : null;
+      const isAdult = birthdate
+        ? dayjs().diff(birthdate, 'year') >= 18
+        : true;
+      duration = isAdult ? 60 : 30;
+    }
+
+    return dayjs(startTime).add(duration, 'minute').format('YYYY-MM-DDTHH:mm');
+  });
   const [showOverlapWarning, setShowOverlapWarning] = useState(false);
   const [showAddPatient, setShowAddPatient] = useState(false);
 
@@ -318,23 +342,25 @@ export default function AppointmentModal({
         </div>
         <input type="hidden" name="patientId" value={selectedPatientId || ''} />
 
+        <Input
+          label={t.treatment?.date || 'Date'}
+          element="appointmentDate"
+          type="date"
+          value={dayjs(startTime).format('YYYY-MM-DD')}
+          onChange={(e) => {
+            const newDate = e.target.value;
+            const currentStartTime = dayjs(startTime).format('HH:mm');
+            const currentEndTime = dayjs(endTime).format('HH:mm');
+            setStartTime(`${newDate}T${currentStartTime}`);
+            setEndTime(`${newDate}T${currentEndTime}`);
+          }}
+          required
+        />
+
         <div className="flex gap-x-4">
           <Input
             label={t.appointments?.startTime || 'Start Time'}
-            element="startTimeDate"
-            type="date"
-            value={dayjs(startTime).format('YYYY-MM-DD')}
-            onChange={(e) => {
-              const newDate = e.target.value;
-              const currentTime = dayjs(startTime).format('HH:mm');
-              setStartTime(`${newDate}T${currentTime}`);
-            }}
-            required
-            containerClassName="flex-1"
-          />
-          <Input
-            label={t.appointments?.startTime || 'Start Time'}
-            element="startTimeTime"
+            element="startTime"
             type="time"
             value={dayjs(startTime).format('HH:mm')}
             onChange={(e) => {
@@ -345,30 +371,14 @@ export default function AppointmentModal({
             required
             containerClassName="flex-1"
           />
-        </div>
-
-        <div className="flex gap-x-4">
           <Input
             label={t.appointments?.endTime || 'End Time'}
-            element="endTimeDate"
-            type="date"
-            value={dayjs(endTime).format('YYYY-MM-DD')}
-            onChange={(e) => {
-              const newDate = e.target.value;
-              const currentTime = dayjs(endTime).format('HH:mm');
-              setEndTime(`${newDate}T${currentTime}`);
-            }}
-            required
-            containerClassName="flex-1"
-          />
-          <Input
-            label={t.appointments?.endTime || 'End Time'}
-            element="endTimeTime"
+            element="endTime"
             type="time"
             value={dayjs(endTime).format('HH:mm')}
             onChange={(e) => {
               const newTime = e.target.value;
-              const currentDate = dayjs(endTime).format('YYYY-MM-DD');
+              const currentDate = dayjs(startTime).format('YYYY-MM-DD');
               setEndTime(`${currentDate}T${newTime}`);
             }}
             required
