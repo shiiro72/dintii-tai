@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import 'dayjs/locale/ro';
+import 'dayjs/locale/de';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
+import { useLanguage } from '@/components/providers/LanguageProvider';
 import { useDialog } from '@/components/providers/DialogProvider';
 import { Button } from '@/components/atoms/Button';
 import AppointmentModal from '../Modals/AppointmentModal';
@@ -38,23 +41,34 @@ export default function AppointmentCalendar({
 }: {
   initialAppointments: AppointmentWithPatient[];
   patients: {
-      id: number;
-      first_name: string;
-      last_name: string;
-      phone: string;
-      birthdate: string | null;
+    id: number;
+    first_name: string;
+    last_name: string;
+    phone: string;
+    birthdate: string | null;
   }[];
 }) {
   const dictionary = useDictionary();
   const t = dictionary;
+  const lang = useLanguage();
   const { handleClick, closeDialog, showFeedback } = useDialog();
-  const [currentDate, setCurrentDate] = useState(dayjs());
+  const [currentDate, setCurrentDate] = useState(dayjs().locale(lang));
   const [viewMode, setViewMode] = useState<ViewMode>('week');
+
+  useEffect(() => {
+    setCurrentDate((prev) => prev.locale(lang));
+  }, [lang]);
 
   const appointments = initialAppointments;
 
-  const startOfWeek = currentDate.startOf('isoWeek');
-  const daysOfWeek = Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, 'day'));
+  const startOfWeek = useMemo(
+    () => currentDate.startOf('isoWeek'),
+    [currentDate]
+  );
+  const daysOfWeek = useMemo(
+    () => Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, 'day')),
+    [startOfWeek]
+  );
   const hours = Array.from({ length: 11 }).map((_, i) => 8 + i); // 8 to 18
 
   const startOfMonth = currentDate.startOf('month');
@@ -129,54 +143,67 @@ export default function AppointmentCalendar({
     }
   };
 
-  const renderMonthView = () => (
-    <div className="grid grid-cols-7 gap-1">
-      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-        <div
-          key={d}
-          className="bg-base-dark p-2 text-center font-bold text-white"
-        >
-          {d}
-        </div>
-      ))}
-      {Array.from({ length: startOfMonth.isoWeekday() - 1 }).map((_, i) => (
-        <div key={`empty-${i}`} className="border border-gray-100 bg-gray-50 p-4"></div>
-      ))}
-      {monthDays.map((day) => {
-        const isPast = day.isBefore(dayjs().startOf('day'));
-        const isWeekend = day.day() === 0 || day.day() === 6;
-        return (
+  const renderMonthView = () => {
+    const dayNames = Array.from({ length: 7 }).map((_, i) =>
+      dayjs().isoWeekday(i + 1).locale(lang).format('ddd')
+    );
+
+    return (
+      <div className="grid grid-cols-7 gap-1">
+        {dayNames.map((d) => (
           <div
-            key={day.toString()}
-            className={`relative min-h-[100px] border border-gray-100 p-1 ${isPast ? 'bg-gray-200 grayscale opacity-60' : isWeekend ? 'bg-orange-50' : 'bg-white'}`}
+            key={d}
+            className="bg-base-dark p-2 text-center font-bold text-white"
           >
-            <span className={`text-sm ${isWeekend ? 'font-bold text-orange-600' : 'text-gray-500'}`}>{day.date()}</span>
-            <div className="relative z-10 mt-1 flex flex-col gap-1">
-              {getAppointmentsForDate(day).map((app) => (
-                <div
-                  key={app.id}
-                  className="cursor-pointer truncate rounded bg-blue-100 p-1 text-[10px] text-blue-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditAppointment(app);
-                  }}
-                >
-                  {dayjs(app.start_time).format('HH:mm')} {app.patient?.last_name}
-                </div>
-              ))}
-            </div>
-            <div
-              className="absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10"
-              onClick={() => {
-                setCurrentDate(day);
-                setViewMode('day');
-              }}
-            />
+            {d}
           </div>
-        );
-      })}
-    </div>
-  );
+        ))}
+        {Array.from({ length: startOfMonth.isoWeekday() - 1 }).map((_, i) => (
+          <div
+            key={`empty-${i}`}
+            className="border border-gray-100 bg-gray-50 p-4"
+          ></div>
+        ))}
+        {monthDays.map((day) => {
+          const isPast = day.isBefore(dayjs().startOf('day'));
+          const isWeekend = day.day() === 0 || day.day() === 6;
+          return (
+            <div
+              key={day.toString()}
+              className={`relative min-h-[100px] border border-gray-100 p-1 ${isPast ? 'bg-gray-200 grayscale opacity-60' : isWeekend ? 'bg-orange-50' : 'bg-white'}`}
+            >
+              <span
+                className={`text-sm ${isWeekend ? 'font-bold text-orange-600' : 'text-gray-500'}`}
+              >
+                {day.date()}
+              </span>
+              <div className="relative z-10 mt-1 flex flex-col gap-1">
+                {getAppointmentsForDate(day).map((app) => (
+                  <div
+                    key={app.id}
+                    className="cursor-pointer truncate rounded bg-blue-100 p-1 text-[10px] text-blue-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditAppointment(app);
+                    }}
+                  >
+                    {dayjs(app.start_time).format('HH:mm')} {app.patient?.last_name}
+                  </div>
+                ))}
+              </div>
+              <div
+                className="absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10"
+                onClick={() => {
+                  setCurrentDate(day);
+                  setViewMode('day');
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderWeekView = () => (
     <div className="flex flex-col overflow-x-auto">
@@ -189,7 +216,7 @@ export default function AppointmentCalendar({
               key={day.toString()}
               className={`flex-1 border-l border-gray-200 p-2 text-center ${day.isSame(dayjs(), 'day') ? 'bg-blue-50 font-bold' : isWeekend ? 'bg-orange-600 text-white' : 'bg-base-dark text-white'}`}
             >
-              <div>{day.format('ddd')}</div>
+              <div>{day.locale(lang).format('ddd')}</div>
               <div className="text-sm">{day.format('DD/MM')}</div>
             </div>
           );
@@ -302,10 +329,12 @@ export default function AppointmentCalendar({
     const isPast = currentDate.isBefore(dayjs().startOf('day'));
 
     return (
-    <div className="flex flex-col">
-       <div className={`text-center p-4 ${isWeekend ? 'bg-orange-600' : 'bg-base-dark'} text-white font-bold mb-4`}>
-          {currentDate.format('dddd, MMMM D, YYYY')}
-       </div>
+      <div className="flex flex-col">
+        <div
+          className={`text-center p-4 ${isWeekend ? 'bg-orange-600' : 'bg-base-dark'} text-white font-bold mb-4`}
+        >
+          {currentDate.locale(lang).format('dddd, MMMM D, YYYY')}
+        </div>
        <div className="flex flex-col border border-gray-200">
           {hours.map(hour => (
              <div key={hour} className={`flex border-b border-gray-100 h-24 ${isPast ? 'bg-gray-100' : isWeekend ? 'bg-orange-50' : 'bg-white'} relative group`} onClick={() => handleSlotClick(currentDate, hour)}>
@@ -376,14 +405,31 @@ export default function AppointmentCalendar({
       <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-lg shadow-sm gap-4">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold text-base-dark">
-            {viewMode === 'month' && currentDate.format('MMMM YYYY')}
-            {viewMode === 'week' && `Week of ${startOfWeek.format('MMM D, YYYY')}`}
-            {viewMode === 'day' && currentDate.format('MMM D, YYYY')}
+            {viewMode === 'month' &&
+              currentDate.locale(lang).format('MMMM YYYY')}
+            {viewMode === 'week' &&
+              (t?.appointments?.weekOf || 'Week of {date}').replace(
+                '{date}',
+                startOfWeek.locale(lang).format('MMM D, YYYY')
+              )}
+            {viewMode === 'day' && currentDate.locale(lang).format('LL')}
           </h2>
           <div className="flex gap-1">
-            <Button iconName="chevron_left" asLink onClick={() => setCurrentDate(currentDate.subtract(1, viewMode))} />
-            <Button label="Today" asLink onClick={() => setCurrentDate(dayjs())} />
-            <Button iconName="chevron_right" asLink onClick={() => setCurrentDate(currentDate.add(1, viewMode))} />
+            <Button
+              iconName="chevron_left"
+              asLink
+              onClick={() => setCurrentDate(currentDate.subtract(1, viewMode))}
+            />
+            <Button
+              label={t?.appointments?.today || 'Today'}
+              asLink
+              onClick={() => setCurrentDate(dayjs().locale(lang))}
+            />
+            <Button
+              iconName="chevron_right"
+              asLink
+              onClick={() => setCurrentDate(currentDate.add(1, viewMode))}
+            />
           </div>
         </div>
         <div className="flex bg-gray-100 rounded-lg p-1">
@@ -393,7 +439,8 @@ export default function AppointmentCalendar({
               onClick={() => setViewMode(mode)}
               className={`cursor-pointer px-4 py-1 rounded-md text-sm transition-all ${viewMode === mode ? 'bg-white shadow text-base-dark font-bold' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              {t?.appointments?.[mode] ||
+                mode.charAt(0).toUpperCase() + mode.slice(1)}
             </button>
           ))}
         </div>

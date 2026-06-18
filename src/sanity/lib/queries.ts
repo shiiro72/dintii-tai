@@ -265,5 +265,10 @@ export const FULL_DICTIONARY_QUERY = defineQuery(`{
     "overlapWarning": overlapWarning[_key == $language][0].value,
     "overlapProceed": overlapProceed[_key == $language][0].value,
     "overlapCancel": overlapCancel[_key == $language][0].value,
+    "today": today[_key == $language][0].value,
+    "month": month[_key == $language][0].value,
+    "week": week[_key == $language][0].value,
+    "day": day[_key == $language][0].value,
+    "weekOf": weekOf[_key == $language][0].value,
   }
 }`);
