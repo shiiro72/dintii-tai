@@ -85,7 +85,7 @@ export async function sendWhatsAppReminder(
         to: formattedPhone,
         type: 'template',
         template: {
-          name: 'jaspers_market_order_confirmation_v1', // appointment_reminder - Must be approved in Meta Business Manager
+          name: 'appointment_reminder', // Must be approved in Meta Business Manager
           language: { code: 'ro' },
           components: [
             {
