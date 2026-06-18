@@ -19,13 +19,17 @@ export async function sendWhatsAppMessage(to: string, message: string) {
     return;
   }
 
-  const formattedPhone = to.startsWith('+') ? to.substring(1) : to.startsWith('40') ? to : `40${to}`;
+  const formattedPhone = to.startsWith('+')
+    ? to.substring(1)
+    : to.startsWith('40')
+      ? to
+      : `40${to}`;
 
   try {
     const response = await fetch(WHATSAPP_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${ACCESS_TOKEN}`,
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -53,19 +57,27 @@ export async function sendWhatsAppMessage(to: string, message: string) {
  * Sends an appointment reminder using a pre-approved Meta Template.
  * Templates are required for initiating messages.
  */
-export async function sendWhatsAppReminder(to: string, patientName: string, appointmentTime: string) {
+export async function sendWhatsAppReminder(
+  to: string,
+  patientName: string,
+  appointmentTime: string
+) {
   if (!ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
     console.error('WhatsApp credentials are not configured');
     return;
   }
 
-  const formattedPhone = to.startsWith('+') ? to.substring(1) : to.startsWith('40') ? to : `40${to}`;
+  const formattedPhone = to.startsWith('+')
+    ? to.substring(1)
+    : to.startsWith('40')
+      ? to
+      : `40${to}`;
 
   try {
     const response = await fetch(WHATSAPP_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${ACCESS_TOKEN}`,
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -73,18 +85,18 @@ export async function sendWhatsAppReminder(to: string, patientName: string, appo
         to: formattedPhone,
         type: 'template',
         template: {
-          name: 'appointment_reminder', // Must be approved in Meta Business Manager
+          name: 'jaspers_market_order_confirmation_v1', // appointment_reminder - Must be approved in Meta Business Manager
           language: { code: 'ro' },
           components: [
             {
               type: 'body',
               parameters: [
                 { type: 'text', text: patientName },
-                { type: 'text', text: appointmentTime }
-              ]
-            }
-          ]
-        }
+                { type: 'text', text: appointmentTime },
+              ],
+            },
+          ],
+        },
       }),
     });
 
