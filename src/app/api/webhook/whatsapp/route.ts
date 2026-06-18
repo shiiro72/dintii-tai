@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/supabase/server';
+import { createAdminClient } from '@/supabase/admin';
 import { APPOINTMENT_DATABASE } from '@/types/GlobalTypes';
 import { sendWhatsAppMessage } from '@/supabase/whatsapp';
 import dayjs from 'dayjs';
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (status) {
       try {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
 
         // Find the most recent upcoming appointment for this phone number
         // We look for appointments from today onwards
