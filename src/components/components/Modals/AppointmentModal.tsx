@@ -148,6 +148,43 @@ export default function AppointmentModal({
     }
   }, [selectedPatientId, startTime, patients, appointment]);
 
+  useEffect(() => {
+    const initial = appointment?.start_time
+      ? dayjs(appointment.start_time)
+      : selectedDate
+        ? dayjs(selectedDate)
+        : dayjs();
+    setStartTime(
+      initial.isValid()
+        ? initial.format('YYYY-MM-DDTHH:mm')
+        : dayjs().format('YYYY-MM-DDTHH:mm')
+    );
+  }, [selectedDate, appointment]);
+
+  useEffect(() => {
+    if (appointment?.end_time) {
+      const initial = dayjs(appointment.end_time);
+      if (initial.isValid()) {
+        setEndTime(initial.format('YYYY-MM-DDTHH:mm'));
+        return;
+      }
+    }
+
+    const patient = patients.find((p) => p.id === selectedPatientId);
+    let duration = 30;
+    if (patient) {
+      const birthdate = patient.birthdate ? dayjs(patient.birthdate) : null;
+      const isAdult = birthdate
+        ? dayjs().diff(birthdate, 'year') >= 18
+        : true;
+      duration = isAdult ? 60 : 30;
+    }
+
+    setEndTime(
+      dayjs(startTime).add(duration, 'minute').format('YYYY-MM-DDTHH:mm')
+    );
+  }, [selectedDate, appointment, selectedPatientId, patients, startTime]);
+
   const saveAppointment = async () => {
     try {
       const formData = new FormData();

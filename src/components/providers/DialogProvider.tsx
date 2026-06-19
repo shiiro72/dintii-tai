@@ -65,7 +65,7 @@ export default function DialogProvider({
     >
       <Dialog
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={closeDialog}
         headline={headline}
         className={className}
       >
