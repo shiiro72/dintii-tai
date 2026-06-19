@@ -109,3 +109,55 @@ export async function sendWhatsAppReminder(
     console.error('WhatsApp Template API call failed:', error);
   }
 }
+
+/**
+ * Sends a re-engagement message to patients who haven't visited in a while.
+ */
+export async function sendWhatsAppReengagementReminder(
+  to: string,
+  patientName: string
+) {
+  if (!ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
+    console.error('WhatsApp credentials are not configured');
+    return;
+  }
+
+  const formattedPhone = to.startsWith('+')
+    ? to.substring(1)
+    : to.startsWith('40')
+      ? to
+      : `40${to}`;
+
+  try {
+    const response = await fetch(WHATSAPP_API_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: formattedPhone,
+        type: 'template',
+        template: {
+          name: 'reengagement_reminder', // Must be approved in Meta Business Manager
+          language: { code: 'ro' },
+          components: [
+            {
+              type: 'body',
+              parameters: [{ type: 'text', text: patientName }],
+            },
+          ],
+        },
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error('Error sending WhatsApp re-engagement template:', data);
+    }
+    return data;
+  } catch (error) {
+    console.error('WhatsApp Re-engagement API call failed:', error);
+  }
+}
