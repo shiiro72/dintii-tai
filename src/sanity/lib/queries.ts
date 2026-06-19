@@ -270,5 +270,12 @@ export const FULL_DICTIONARY_QUERY = defineQuery(`{
     "week": week[_key == $language][0].value,
     "day": day[_key == $language][0].value,
     "weekOf": weekOf[_key == $language][0].value,
+    "monday": monday[_key == $language][0].value,
+    "tuesday": tuesday[_key == $language][0].value,
+    "wednesday": wednesday[_key == $language][0].value,
+    "thursday": thursday[_key == $language][0].value,
+    "friday": friday[_key == $language][0].value,
+    "saturday": saturday[_key == $language][0].value,
+    "sunday": sunday[_key == $language][0].value,
   }
 }`);

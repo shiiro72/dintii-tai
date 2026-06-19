@@ -93,6 +93,41 @@ export const dictionaryAppointmentsType = defineType({
       type: 'internationalizedArrayString',
       description: 'e.g. Week of {date}',
     }),
+    defineField({
+      name: 'monday',
+      title: 'Monday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'tuesday',
+      title: 'Tuesday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'wednesday',
+      title: 'Wednesday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'thursday',
+      title: 'Thursday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'friday',
+      title: 'Friday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'saturday',
+      title: 'Saturday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'sunday',
+      title: 'Sunday',
+      type: 'internationalizedArrayString',
+    }),
   ],
   preview: {
     prepare() {
