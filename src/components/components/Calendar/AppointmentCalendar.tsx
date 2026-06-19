@@ -26,6 +26,7 @@ type AppointmentWithPatient = {
   start_time: string;
   end_time: string;
   phone_number: string | null;
+  status?: 'pending' | 'confirmed' | 'cancelled';
   patient?: {
     id: number;
     first_name: string;
@@ -69,7 +70,31 @@ export default function AppointmentCalendar({
     () => Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, 'day')),
     [startOfWeek]
   );
-  const hours = Array.from({ length: 11 }).map((_, i) => 8 + i); // 8 to 18
+
+  const hours = useMemo(() => {
+    const defaultStart = 8;
+    const defaultEnd = 18;
+
+    if (initialAppointments.length === 0) {
+      return Array.from({ length: defaultEnd - defaultStart + 1 }).map(
+        (_, i) => defaultStart + i
+      );
+    }
+
+    let minHour = defaultStart;
+    let maxHour = defaultEnd;
+
+    initialAppointments.forEach((app) => {
+      const startHour = dayjs(app.start_time).hour();
+      const endHour = dayjs(app.end_time).hour();
+      if (startHour < minHour) minHour = startHour;
+      if (endHour > maxHour) maxHour = endHour;
+    });
+
+    return Array.from({ length: maxHour - minHour + 1 }).map(
+      (_, i) => minHour + i
+    );
+  }, [initialAppointments]);
 
   const startOfMonth = currentDate.startOf('month');
   const endOfMonth = currentDate.endOf('month');
@@ -151,11 +176,23 @@ export default function AppointmentCalendar({
   };
 
   const renderMonthView = () => {
-    const dayNames = Array.from({ length: 7 }).map((_, i) =>
-      dayjs()
-        .isoWeekday(i + 1)
-        .locale(lang)
-        .format('ddd')
+    const dayKeys = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ] as const;
+
+    const dayNames = dayKeys.map(
+      (key) =>
+        t?.appointments?.[key as keyof typeof t.appointments] ||
+        dayjs()
+          .isoWeekday(dayKeys.indexOf(key) + 1)
+          .locale(lang)
+          .format('ddd')
     );
 
     return (
@@ -188,19 +225,29 @@ export default function AppointmentCalendar({
                 {day.date()}
               </span>
               <div className='relative z-10 mt-1 flex flex-col gap-1'>
-                {getAppointmentsForDate(day).map((app) => (
-                  <div
-                    key={app.id}
-                    className='cursor-pointer truncate rounded bg-blue-100 p-1 text-[10px] text-blue-800'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditAppointment(app);
-                    }}
-                  >
-                    {dayjs(app.start_time).format('HH:mm')}{' '}
-                    {app.patient?.last_name}
-                  </div>
-                ))}
+                {getAppointmentsForDate(day).map((app) => {
+                  const isConfirmed = app.status === 'confirmed';
+                  const isCancelled = app.status === 'cancelled';
+                  return (
+                    <div
+                      key={app.id}
+                      className={`cursor-pointer truncate rounded p-1 text-[10px] ${
+                        isConfirmed
+                          ? 'bg-green-100 text-green-800'
+                          : isCancelled
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-blue-100 text-blue-800'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditAppointment(app);
+                      }}
+                    >
+                      {dayjs(app.start_time).format('HH:mm')}{' '}
+                      {app.patient?.last_name}
+                    </div>
+                  );
+                })}
               </div>
               <div
                 className='absolute inset-0 z-0 cursor-pointer bg-blue-500 opacity-0 hover:opacity-10'
@@ -222,12 +269,26 @@ export default function AppointmentCalendar({
         <div className='w-20 flex-shrink-0'></div>
         {daysOfWeek.map((day) => {
           const isWeekend = day.day() === 0 || day.day() === 6;
+          const dayKeys = [
+            'sunday',
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+          ] as const;
+          const dayName =
+            t?.appointments?.[
+              dayKeys[day.day()] as keyof typeof t.appointments
+            ] || day.locale(lang).format('ddd');
+
           return (
             <div
               key={day.toString()}
               className={`flex-1 border-l border-gray-200 p-2 text-center ${day.isSame(dayjs(), 'day') ? 'bg-blue-50 font-bold' : isWeekend ? 'bg-orange-600 text-white' : 'bg-base-dark text-white'}`}
             >
-              <div>{day.locale(lang).format('ddd')}</div>
+              <div>{dayName}</div>
               <div className='text-sm'>{day.format('DD/MM')}</div>
             </div>
           );
@@ -261,26 +322,42 @@ export default function AppointmentCalendar({
                     const top = (start.minute() / 60) * 100;
                     const height = (durationMin / 60) * 100;
 
+                    const isConfirmed = app.status === 'confirmed';
+                    const isCancelled = app.status === 'cancelled';
+                    const isMinor =
+                      app.patient?.birthdate &&
+                      dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18;
+
+                    let bgColor = isMinor
+                      ? 'var(--color-appointment-minor-bg)'
+                      : 'var(--color-appointment-pending-bg)';
+                    let textColor = isMinor
+                      ? 'var(--color-appointment-minor-text)'
+                      : 'var(--color-appointment-pending-text)';
+                    let borderColor = isMinor
+                      ? 'var(--color-appointment-minor-border)'
+                      : 'var(--color-appointment-pending-border)';
+
+                    if (isConfirmed) {
+                      bgColor = 'var(--color-appointment-confirmed-bg)';
+                      textColor = 'var(--color-appointment-confirmed-text)';
+                      borderColor = 'var(--color-appointment-confirmed-border)';
+                    } else if (isCancelled) {
+                      bgColor = 'var(--color-appointment-cancelled-bg)';
+                      textColor = 'var(--color-appointment-cancelled-text)';
+                      borderColor = 'var(--color-appointment-cancelled-border)';
+                    }
+
                     return (
                       <div
                         key={app.id}
-                        className='absolute right-1 left-1 z-10 flex flex-col justify-between overflow-hidden rounded p-1 text-xs shadow-sm'
+                        className='absolute right-1 left-1 z-10 flex flex-col justify-between overflow-hidden rounded p-1 text-xs border-l-4 shadow-sm'
                         style={{
                           top: `${top}%`,
                           height: `${height}%`,
-                          backgroundColor:
-                            app.patient?.birthdate &&
-                            dayjs().diff(dayjs(app.patient.birthdate), 'year') <
-                              18
-                              ? '#e9d5ff'
-                              : '#bfdbfe',
-                          color:
-                            app.patient?.birthdate &&
-                            dayjs().diff(dayjs(app.patient.birthdate), 'year') <
-                              18
-                              ? '#6b21a8'
-                              : '#1e40af',
-                          borderLeft: `4px solid ${app.patient?.birthdate && dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18 ? '#a855f7' : '#3b82f6'}`,
+                          backgroundColor: bgColor,
+                          color: textColor,
+                          borderColor: borderColor,
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -374,86 +451,99 @@ export default function AppointmentCalendar({
                 <div className='absolute inset-0 cursor-pointer bg-blue-500 opacity-0 group-hover:opacity-5' />
                 {getAppointmentsForDate(currentDate)
                   .filter((app) => dayjs(app.start_time).hour() === hour)
-                  .map((app) => (
-                    <div
-                      key={app.id}
-                      className='absolute right-2 left-2 z-10 flex items-center justify-between rounded border-l-4 p-2 text-sm shadow-md'
-                      style={{
-                        top: `${(dayjs(app.start_time).minute() / 60) * 100}%`,
-                        height: `${(dayjs(app.end_time).diff(dayjs(app.start_time), 'minute') / 60) * 100}%`,
-                        backgroundColor:
-                          app.patient?.birthdate &&
-                          dayjs().diff(dayjs(app.patient.birthdate), 'year') <
-                            18
-                            ? '#f3e8ff'
-                            : '#dbeafe',
-                        color:
-                          app.patient?.birthdate &&
-                          dayjs().diff(dayjs(app.patient.birthdate), 'year') <
-                            18
-                            ? '#581c87'
-                            : '#1e3a8a',
-                        borderColor:
-                          app.patient?.birthdate &&
-                          dayjs().diff(dayjs(app.patient.birthdate), 'year') <
-                            18
-                            ? '#a855f7'
-                            : '#3b82f6',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditAppointment(app);
-                      }}
-                    >
-                      <div>
-                        <span className='font-bold'>
-                          {dayjs(app.start_time).format('HH:mm')} -{' '}
-                          {dayjs(app.end_time).format('HH:mm')}
-                        </span>
-                        <NextLink
-                          href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
-                          className='ml-3 cursor-pointer font-semibold hover:underline'
+                  .map((app) => {
+                    const isConfirmed = app.status === 'confirmed';
+                    const isCancelled = app.status === 'cancelled';
+                    const isMinor =
+                      app.patient?.birthdate &&
+                      dayjs().diff(dayjs(app.patient.birthdate), 'year') < 18;
+
+                    let bgColor = isMinor
+                      ? 'var(--color-appointment-minor-bg)'
+                      : 'var(--color-appointment-pending-bg)';
+                    let textColor = isMinor
+                      ? 'var(--color-appointment-minor-text)'
+                      : 'var(--color-appointment-pending-text)';
+                    let borderColor = isMinor
+                      ? 'var(--color-appointment-minor-border)'
+                      : 'var(--color-appointment-pending-border)';
+
+                    if (isConfirmed) {
+                      bgColor = 'var(--color-appointment-confirmed-bg)';
+                      textColor = 'var(--color-appointment-confirmed-text)';
+                      borderColor = 'var(--color-appointment-confirmed-border)';
+                    } else if (isCancelled) {
+                      bgColor = 'var(--color-appointment-cancelled-bg)';
+                      textColor = 'var(--color-appointment-cancelled-text)';
+                      borderColor = 'var(--color-appointment-cancelled-border)';
+                    }
+
+                    return (
+                      <div
+                        key={app.id}
+                        className='absolute right-2 left-2 z-10 flex items-center justify-between rounded border-l-4 p-2 text-sm shadow-md'
+                        style={{
+                          top: `${(dayjs(app.start_time).minute() / 60) * 100}%`,
+                          height: `${(dayjs(app.end_time).diff(dayjs(app.start_time), 'minute') / 60) * 100}%`,
+                          backgroundColor: bgColor,
+                          color: textColor,
+                          borderColor: borderColor,
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditAppointment(app);
+                        }}
+                      >
+                        <div>
+                          <span className='font-bold'>
+                            {dayjs(app.start_time).format('HH:mm')} -{' '}
+                            {dayjs(app.end_time).format('HH:mm')}
+                          </span>
+                          <NextLink
+                            href={`${PATIENTS_PATH}/${dayjs().diff(dayjs(app.patient?.birthdate), 'year') < 18 ? 'minor' : 'adult'}/${app.patient?.id}`}
+                            className='ml-3 cursor-pointer font-semibold hover:underline'
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {app.patient?.first_name} {app.patient?.last_name}
+                          </NextLink>
+                          {app.phone_number && (
+                            <span
+                              className='ml-3 cursor-pointer text-xs italic hover:underline'
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (app.phone_number)
+                                  handlePhoneClick(app.phone_number);
+                              }}
+                            >
+                              {app.phone_number}
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className='flex gap-2'
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {app.patient?.first_name} {app.patient?.last_name}
-                        </NextLink>
-                        {app.phone_number && (
-                          <span
-                            className='ml-3 cursor-pointer text-xs italic hover:underline'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (app.phone_number)
-                                handlePhoneClick(app.phone_number);
-                            }}
-                          >
-                            {app.phone_number}
-                          </span>
-                        )}
+                          <Button
+                            iconName='edit'
+                            asLink
+                            onClick={() => handleEditAppointment(app)}
+                          />
+                          <DeleteButton
+                            deleteAction={() => handleDelete(app.id)}
+                            message={
+                              t?.appointments?.deleteAppointmentMessage ||
+                              'Delete this appointment?'
+                            }
+                            asLink
+                            dialogHeadline={
+                              t?.appointments?.deleteAppointment ||
+                              'Delete Appointment'
+                            }
+                          />
+                        </div>
                       </div>
-                      <div
-                        className='flex gap-2'
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button
-                          iconName='edit'
-                          asLink
-                          onClick={() => handleEditAppointment(app)}
-                        />
-                        <DeleteButton
-                          deleteAction={() => handleDelete(app.id)}
-                          message={
-                            t?.appointments?.deleteAppointmentMessage ||
-                            'Delete this appointment?'
-                          }
-                          asLink
-                          dialogHeadline={
-                            t?.appointments?.deleteAppointment ||
-                            'Delete Appointment'
-                          }
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             </div>
           ))}
@@ -470,7 +560,7 @@ export default function AppointmentCalendar({
             {viewMode === 'month' &&
               currentDate.locale(lang).format('MMMM YYYY')}
             {viewMode === 'week' &&
-              (t?.appointments?.weekOf + ' {date}' || 'Week of {date}').replace(
+              (t?.appointments?.weekOf || 'Week of {date}').replace(
                 '{date}',
                 startOfWeek.locale(lang).format('MMM D, YYYY')
               )}
