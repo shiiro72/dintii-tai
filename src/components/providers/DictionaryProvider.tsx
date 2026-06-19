@@ -104,6 +104,18 @@ export const defaultDictionaryEntries: FULL_DICTIONARY_QUERYResult = {
     overlapWarning: null,
     overlapProceed: null,
     overlapCancel: null,
+    today: 'Today',
+    month: 'Month',
+    week: 'Week',
+    day: 'Day',
+    weekOf: 'Week of {date}',
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+    sunday: 'Sunday',
   },
 };
 

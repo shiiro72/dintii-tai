@@ -67,6 +67,67 @@ export const dictionaryAppointmentsType = defineType({
       title: 'Overlap Cancel Button',
       type: 'internationalizedArrayString',
     }),
+    defineField({
+      name: 'today',
+      title: 'Today Label',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'month',
+      title: 'Month Label',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'week',
+      title: 'Week Label',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'day',
+      title: 'Day Label',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'weekOf',
+      title: 'Week Of Label',
+      type: 'internationalizedArrayString',
+      description: 'e.g. Week of {date}',
+    }),
+    defineField({
+      name: 'monday',
+      title: 'Monday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'tuesday',
+      title: 'Tuesday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'wednesday',
+      title: 'Wednesday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'thursday',
+      title: 'Thursday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'friday',
+      title: 'Friday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'saturday',
+      title: 'Saturday',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
+      name: 'sunday',
+      title: 'Sunday',
+      type: 'internationalizedArrayString',
+    }),
   ],
   preview: {
     prepare() {
