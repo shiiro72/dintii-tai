@@ -351,7 +351,7 @@ export default function AppointmentCalendar({
                     return (
                       <div
                         key={app.id}
-                        className='absolute right-1 left-1 z-10 flex flex-col justify-between overflow-hidden rounded p-1 text-xs border-l-4 shadow-sm'
+                        className='absolute right-1 left-1 z-10 flex flex-col justify-between overflow-hidden rounded border-l-4 p-1 text-xs shadow-sm'
                         style={{
                           top: `${top}%`,
                           height: `${height}%`,
@@ -560,7 +560,7 @@ export default function AppointmentCalendar({
             {viewMode === 'month' &&
               currentDate.locale(lang).format('MMMM YYYY')}
             {viewMode === 'week' &&
-              (t?.appointments?.weekOf || 'Week of {date}').replace(
+              (t?.appointments?.weekOf + ' {date}' || 'Week of {date}').replace(
                 '{date}',
                 startOfWeek.locale(lang).format('MMM D, YYYY')
               )}
