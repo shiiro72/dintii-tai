@@ -25,7 +25,7 @@ export default function DeleteButton({
   message,
   ...rest
 }: DeleteButtonProps) {
-  const { yes, no, successMessage, errorMessage } = useDictionary();
+  const dictionary = useDictionary(); const { yes, no, successMessage, errorMessage } = dictionary?.feedback || {};
   const { handleClick, closeDialog, showFeedback } = useDialog();
 
   async function handleFormSubmission() {
@@ -76,7 +76,7 @@ export function DeletePatientButton({
   deleteAction,
   textForEntryToDelete,
 }: BaseDeleteButtonProps) {
-  const { deletePatient, deletePatientMessage } = useDictionary();
+  const dictionary = useDictionary(); const { deletePatient } = dictionary?.edit || {}; const { deletePatientMessage } = dictionary?.feedback || {};
   const pathname = usePathname();
 
   const pathnameSegments = pathname.split('/');
@@ -99,7 +99,7 @@ export function DeleteTreatmentButton({
   deleteAction,
   textForEntryToDelete,
 }: BaseDeleteButtonProps) {
-  const { deleteTreatment, deleteTreatmentMessage } = useDictionary();
+  const dictionary = useDictionary(); const { deleteTreatment } = dictionary?.edit || {}; const { deleteTreatmentMessage } = dictionary?.feedback || {};
 
   return (
     <DeleteButton

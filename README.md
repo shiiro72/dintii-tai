@@ -17,3 +17,17 @@ At
 ```
 
 you can open the studio to edit data
+
+### Styling & Colors
+
+Global colors for appointment statuses are defined in `src/app/globals.css` using CSS variables:
+- `--color-appointment-pending-*`
+- `--color-appointment-confirmed-*`
+- `--color-appointment-cancelled-*`
+- `--color-appointment-minor-*`
+
+### Appointment Status
+
+- **Pending (Default)**: Blue/Purple on calendar.
+- **Confirmed**: Green on calendar.
+- **Cancelled**: Red on calendar.

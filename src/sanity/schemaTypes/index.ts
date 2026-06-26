@@ -14,6 +14,7 @@ import { dictionaryGeneralType } from './dictionaryGeneralType';
 import { dictionaryFeedbackType } from './dictionaryFeedbackType';
 import { dictionaryFormType } from './dictionaryForms';
 import { dictionaryTodoType } from './dictionaryTodoType';
+import { dictionaryAppointmentsType } from './dictionaryAppointmentsType';
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -31,5 +32,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     dictionaryFeedbackType,
     dictionaryFormType,
     dictionaryTodoType,
+    dictionaryAppointmentsType,
   ],
 };

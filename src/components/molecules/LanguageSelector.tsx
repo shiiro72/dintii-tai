@@ -3,7 +3,7 @@
 import { Button } from '../atoms/Button';
 import { useState } from 'react';
 import { useLanguage } from '../providers/LanguageProvider';
-import { locales } from '@/middleware';
+const locales = ['en', 'de', 'ro'];
 import { usePathname } from 'next/navigation';
 
 type LanguageProps = {

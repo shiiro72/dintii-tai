@@ -20,6 +20,10 @@ export const dictionaryPatientType = defineType({
       type: 'internationalizedArrayString',
     }),
     defineField({
+      name: 'email',
+      type: 'internationalizedArrayString',
+    }),
+    defineField({
       name: 'patientFile',
       type: 'internationalizedArrayString',
     }),

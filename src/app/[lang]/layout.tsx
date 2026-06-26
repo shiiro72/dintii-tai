@@ -101,23 +101,5 @@ export async function getDictionaryEntries(
     params: { language: lang },
   });
 
-  const mergedEntries = {
-    ...data?.general,
-    ...data?.navigation,
-    ...data?.edit,
-    ...data?.patient,
-    ...data?.treatment,
-    ...data?.feedback,
-    ...data?.form,
-    ...data?.todo,
-  };
-
-  const dictionaryEntries: DICTIONARY_QUERYResult = Object.fromEntries(
-    Object.entries(mergedEntries).map(([key, value]) => [
-      key,
-      value === undefined ? null : value,
-    ])
-  ) as DICTIONARY_QUERYResult;
-
-  return dictionaryEntries;
+  return data as DICTIONARY_QUERYResult;
 }

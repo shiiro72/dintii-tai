@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateSession } from './supabase/middleware';
 
-export const locales = ['en', 'de', 'ro'];
+const locales = ['en', 'de', 'ro'];
 const defaultLocale = 'ro';
 
 export function middleware(request: NextRequest) {

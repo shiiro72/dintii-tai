@@ -30,6 +30,7 @@ export async function addPatient(formData: FormData) {
     first_name: formData.get('firstName')?.toString() || null,
     last_name: formData.get('lastName')?.toString() || null,
     phone: formData.get('phone')?.toString() || null,
+    email: formData.get('email')?.toString() || null,
     patient_file_id: null,
   };
 
@@ -106,7 +107,7 @@ export async function getPatientFields(
 
   const { data } = await supabase
     .from(PATIENT_DATABASE)
-    .select('id, first_name, last_name, phone')
+    .select('id, first_name, last_name, phone, email, birthdate')
     .or(categoryCondition)
     .order(element, { ascending: ascending })
     .range(from, to);

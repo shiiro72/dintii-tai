@@ -14,6 +14,8 @@ export type InputProps = PropsWithChildren & {
   autoComplete?: string;
   pattern?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   ref?: Ref<HTMLInputElement>;
 };
 
@@ -40,19 +42,23 @@ export function Input(props: InputProps) {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  const inputProps = {
+    id: element,
+    type: type === 'password' ? (showPassword ? 'text' : 'password') : type,
+    name: element,
+    className: `${isCheckbox ? checkboxStylesInput : `peer w-full min-w-72 rounded-lg border border-gray-500 bg-white p-3 placeholder:text-transparent`} ${className ?? ''}`,
+    placeholder: 'name',
+    required,
+    autoComplete: autoComplete ?? 'off',
+    readOnly,
+    ...rest,
+  };
+
   return (
     <div className={`relative ${containerClassName || ''}`}>
       <input
-        id={element}
-        type={type === 'password' ? (showPassword ? 'text' : 'password') : type}
-        name={element}
-        className={`${isCheckbox ? checkboxStylesInput : `peer w-full min-w-72 rounded-lg border border-gray-500 bg-white p-3 placeholder:text-transparent`} ${className ?? ''}`}
-        placeholder='name'
-        required={required}
-        autoComplete={autoComplete ?? 'off'}
-        readOnly={readOnly}
-        defaultValue={value}
-        {...rest}
+        {...inputProps}
+        {...(rest.onChange ? { value } : { defaultValue: value })}
         {...(isCheckbox && Boolean(value) === true
           ? { defaultChecked: true }
           : {})}
