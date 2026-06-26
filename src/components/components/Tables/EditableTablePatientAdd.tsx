@@ -4,6 +4,7 @@ import { Headline } from '@/components/atoms/Headline';
 import { EditablePatientTable } from '@/components/components/Tables/EditableTable';
 import { EditPatientForm } from '@/components/molecules/EditForm';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
+import { getWhatsAppLink } from '@/helpers';
 import {
   LoadRowsFunction,
   PatientCategory,
@@ -35,6 +36,11 @@ export default function EditableTablePatientAdd({
       onClickRow={(rowData) =>
         redirect(`${PATIENTS_PATH}/${patientCategory}/${rowData.id}`)
       }
+      clickableCell={{
+        clickableCellHeader: 'phone',
+        clickableCellFunction: (rowData) =>
+          redirect(getWhatsAppLink(rowData.phone)),
+      }}
       loadRows={loadRows}
       patientCategory={patientCategory}
       tableHeader={

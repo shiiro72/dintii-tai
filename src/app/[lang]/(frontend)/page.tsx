@@ -12,6 +12,7 @@ import {
   TREATMENT_QUERY,
 } from '@/sanity/lib/queries';
 import Table from '@/components/components/Tables/Table';
+import FloatingIcon from '@/components/components/FloatingIcon';
 
 export default async function Page({
   params,
@@ -59,6 +60,7 @@ export default async function Page({
           <Contact siteInfo={footerData} />
         </>
       )}
+      {footerData?.phone && <FloatingIcon phone={footerData?.phone} />}
     </main>
   );
 }

@@ -5,6 +5,8 @@ import { Headline } from '../atoms/Headline';
 import { Container } from '../molecules/Container';
 import { GridContainer } from '../molecules/GridContainer';
 import { Link } from '../atoms/Link';
+import Image from 'next/image';
+import { getWhatsAppLink } from '@/helpers';
 import { useDictionary } from '../providers/DictionaryProvider';
 
 type ContactProps = {
@@ -46,6 +48,22 @@ export default function Contact(props: ContactProps) {
                 iconName='phone'
                 iconClassName='lg:!text-3xl'
               />
+            )}
+            {phone && (
+              <div className='flex flex-row'>
+                <Image
+                  src='/whatsapp.svg'
+                  height={30}
+                  width={30}
+                  alt='whatsapp icon'
+                  loading='lazy'
+                />
+                <Link
+                  href={getWhatsAppLink(phone)}
+                  label='WhatsApp'
+                  className='ml-3'
+                />
+              </div>
             )}
             {email && (
               <Link

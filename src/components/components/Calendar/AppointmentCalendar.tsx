@@ -12,6 +12,7 @@ import { Button } from '@/components/atoms/Button';
 import AppointmentModal from '../Modals/AppointmentModal';
 import { deleteAppointment } from '@/supabase/actions/appointmentActions';
 import DeleteButton from '@/components/molecules/DeleteButton';
+import { getWhatsAppLink } from '@/helpers';
 import { PATIENTS_PATH } from '@/types/GlobalTypes';
 import NextLink from 'next/link';
 
@@ -131,6 +132,13 @@ export default function AppointmentCalendar({
           label={`Call ${phone}`}
           iconName='call'
           href={`tel:${phone}`}
+          className='w-full rounded-full'
+        />
+        <Button
+          label='WhatsApp Message'
+          iconName='chat'
+          href={getWhatsAppLink(phone)}
+          target='_blank'
           className='w-full rounded-full'
         />
         <Button

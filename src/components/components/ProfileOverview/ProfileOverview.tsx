@@ -3,7 +3,7 @@
 import { PatientType } from '@/types/PatientType';
 import { useDictionary } from '../../providers/DictionaryProvider';
 import ProfileField from './ProfileField';
-import { getPatientFileName } from '@/helpers';
+import { getPatientFileName, getWhatsAppLink } from '@/helpers';
 import { useCallback, useEffect, useState } from 'react';
 import { getPatientFileURL } from '@/supabase/actions/bucketActions';
 import { EditPatientForm } from '@/components/molecules/EditForm';
@@ -49,6 +49,7 @@ export default function ProfileOverview({
   const [documentURL, setDocumentURL] = useState<string | null>(null);
   const [gdprDocumentURL, setGdprDocumentURL] = useState<string | null>(null);
 
+  const phoneNumber = getWhatsAppLink(patient?.phone ?? '');
   const filePath = getPatientFileName(
     patient?.id?.toString() ?? '',
     PATIENT_FILE_NAME
@@ -80,6 +81,12 @@ export default function ProfileOverview({
     {
       label: phone,
       value: patient?.phone,
+      link: patient.phone
+        ? () => {
+            open(phoneNumber);
+            return;
+          }
+        : undefined,
     },
     { label: email, value: patient?.email },
     { label: birthdate, value: patient?.birthdate },
