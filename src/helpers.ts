@@ -62,15 +62,6 @@ export function removeLocaleFromPathName(pathName: string): string {
   return pathName.substring(pathName.indexOf('/', 1));
 }
 
-export function getWhatsAppLink(phoneNumber: string) {
-  let phoneNumberWithCountryCode = phoneNumber;
-
-  if (!phoneNumber.includes('+'))
-    phoneNumberWithCountryCode = `+40${phoneNumber}`;
-
-  return `https://wa.me/${phoneNumberWithCountryCode}`;
-}
-
 export const replaceEntry = (message: string, entry: string) =>
   message?.replace('{entry}', entry);
 
