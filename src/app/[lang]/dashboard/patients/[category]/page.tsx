@@ -11,16 +11,21 @@ import EditableTablePatientAdd from '../../../../../components/components/Tables
 
 export default async function Patients({
   params,
+  searchParams,
 }: Readonly<{
   params: Promise<{ category: PatientCategory; lang: string }>;
+  searchParams: Promise<{ search?: string }>;
 }>) {
   const { category } = await params;
+  const { search } = await searchParams;
+
   const patients = await getPatientFields(
     0,
     ROWS_TO_LOAD - 1,
     true,
     'first_name',
-    category
+    category,
+    search
   );
 
   return (
@@ -38,7 +43,8 @@ export default async function Patients({
               params.to,
               params.ascending,
               params.element,
-              params.category
+              params.category,
+              params.searchTerm
             );
           }}
         />
