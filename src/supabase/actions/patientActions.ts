@@ -89,7 +89,8 @@ export async function getPatientFields(
   to = ROWS_TO_LOAD - 1,
   ascending = true,
   element = 'first_name',
-  category: PatientCategory = 'adult'
+  category: PatientCategory = 'adult',
+  searchTerm?: string
 ) {
   const supabase = await createClient();
 
@@ -105,10 +106,19 @@ export async function getPatientFields(
       ? `birthdate.lte.${adultDate}, birthdate.is.null`
       : `birthdate.gt.${adultDate}`;
 
-  const { data } = await supabase
+  let query = supabase
     .from(PATIENT_DATABASE)
     .select('id, first_name, last_name, phone, email, birthdate')
-    .or(categoryCondition)
+    .or(categoryCondition);
+
+  if (searchTerm) {
+    const escapedSearchTerm = searchTerm.replace(/[,()]/g, (char) => `\\${char}`);
+    query = query.or(
+      `first_name.ilike.%${escapedSearchTerm}%,last_name.ilike.%${escapedSearchTerm}%,phone.ilike.%${escapedSearchTerm}%,email.ilike.%${escapedSearchTerm}%`
+    );
+  }
+
+  const { data } = await query
     .order(element, { ascending: ascending })
     .range(from, to);
 

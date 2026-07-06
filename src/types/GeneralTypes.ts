@@ -63,6 +63,7 @@ export type LoadRowsParams = {
   element?: string;
   id?: number;
   category?: 'adult' | 'minor';
+  searchTerm?: string;
 };
 
 export type LoadRowsFunction = (

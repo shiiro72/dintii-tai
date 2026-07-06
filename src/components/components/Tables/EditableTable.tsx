@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import dayjs from 'dayjs';
 import { convertSnakeToCamelCase, replaceEntry } from '@/helpers';
 import { useDictionary } from '@/components/providers/DictionaryProvider';
@@ -78,6 +79,9 @@ export default function EditableTable(props: SpecificTableProps) {
 
   const dictionary = useDictionary();
   const t = dictionary;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const headers = useMemo(() => {
     const baseHeaders = data?.length
@@ -99,7 +103,9 @@ export default function EditableTable(props: SpecificTableProps) {
 
   const cellClasses = 'p-3 text-font text-base border-b border-font/20';
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get('search')?.toString() || ''
+  );
   const [sortOrder, setSortOrder] = useState<SortOrder>(initialSortOrder);
   const [sortedHeader, setSortedHeader] = useState<string | null>(null);
   const [tableData, setTableData] = useState(data ?? []);
@@ -121,6 +127,30 @@ export default function EditableTable(props: SpecificTableProps) {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (!addSearchBar) return;
+
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchTerm) {
+        params.set('search', searchTerm);
+      } else {
+        params.delete('search');
+      }
+      router.replace(`${pathname}?${params.toString()}`);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, addSearchBar, pathname, router, searchParams]);
+
+  useEffect(() => {
+    if (!loadRows) return;
+
+    setTableData([]);
+    rangeStartRef.current = 0;
+    setMoreDataToLoad(true);
+  }, [searchTerm, loadRows]);
+
   const fetchData = useCallback(async () => {
     if (!moreDataToLoad || loadingRef.current) return;
 
@@ -135,6 +165,7 @@ export default function EditableTable(props: SpecificTableProps) {
         ascending: sortOrder === 'asc',
         element: sortedHeader ?? undefined,
         category: patientCategory,
+        searchTerm: searchTerm,
       });
 
       if (newData && newData?.length) {
@@ -156,7 +187,7 @@ export default function EditableTable(props: SpecificTableProps) {
     } finally {
       loadingRef.current = false;
     }
-  }, [moreDataToLoad, loadRows, sortOrder, sortedHeader, patientCategory]);
+  }, [moreDataToLoad, loadRows, sortOrder, sortedHeader, patientCategory, searchTerm]);
 
   useEffect(() => {
     if (!moreDataToLoad || !isVisible) return;
@@ -165,14 +196,14 @@ export default function EditableTable(props: SpecificTableProps) {
   }, [isVisible, moreDataToLoad, fetchData]);
 
   const filteredData = useMemo(() => {
-    if (!searchTerm) return tableData;
+    if (!searchTerm || loadRows) return tableData;
 
     return tableData?.filter((entry) =>
       Object.values(entry).some((value) =>
         value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
-  }, [searchTerm, tableData]);
+  }, [searchTerm, tableData, loadRows]);
 
   useEffect(() => {
     if (headers && headers.length > 0 && !sortedHeader) {
@@ -190,6 +221,7 @@ export default function EditableTable(props: SpecificTableProps) {
       ascending: order === 'asc',
       element: header,
       category: patientCategory,
+      searchTerm: searchTerm,
     });
 
     if (!newSortedData) return;
