@@ -112,15 +112,16 @@ export default function EditableTable(props: SpecificTableProps) {
 
   const [containerRef, isVisible] = useElementInViewport();
 
-  const rangeStartRef = useRef(ROWS_TO_LOAD);
+  const rangeStartRef = useRef(data?.length ?? ROWS_TO_LOAD);
   const loadingRef = useRef(false);
+  const prevSearchTermRef = useRef(searchTerm);
   const [moreDataToLoad, setMoreDataToLoad] = useState(true);
 
   useEffect(() => {
     setTableData(data ?? []);
-    rangeStartRef.current = ROWS_TO_LOAD;
+    rangeStartRef.current = (data?.length ?? 0) > 0 ? (data?.length ?? 0) : ROWS_TO_LOAD;
 
-    if ((data?.length ?? 0) <= ROWS_TO_LOAD - 1) {
+    if ((data?.length ?? 0) < ROWS_TO_LOAD) {
       setMoreDataToLoad(false);
     } else {
       setMoreDataToLoad(true);
@@ -145,6 +146,9 @@ export default function EditableTable(props: SpecificTableProps) {
 
   useEffect(() => {
     if (!loadRows) return;
+    if (searchTerm === prevSearchTermRef.current) return;
+
+    prevSearchTermRef.current = searchTerm;
 
     setTableData([]);
     rangeStartRef.current = 0;
@@ -234,7 +238,7 @@ export default function EditableTable(props: SpecificTableProps) {
     <>
       {tableHeader}
 
-      {tableData?.length ? (
+      {tableData?.length || addSearchBar || moreDataToLoad ? (
         <div
           className={`overflow-x-auto ${tableClassName ? tableClassName : 'col-span-6 md:col-span-12'}`}
         >
