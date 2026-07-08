@@ -434,7 +434,25 @@ export default function EditableTable(props: SpecificTableProps) {
                                       })()
                                     )}
                                     dialogHeadline={
-                                      dictionary?.edit?.deleteTreatment || ''
+                                      (() => {
+                                        const camelHeader =
+                                          convertSnakeToCamelCase(header);
+                                        const categories = Object.values(
+                                          dictionary || {}
+                                        );
+                                        for (const cat of categories) {
+                                          if (
+                                            cat &&
+                                            typeof cat === 'object' &&
+                                            camelHeader in cat
+                                          ) {
+                                            return (
+                                              cat as Record<string, string>
+                                            )[camelHeader];
+                                          }
+                                        }
+                                        return header;
+                                      })()
                                     }
                                     asLink
                                     className='!p-0'
