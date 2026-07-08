@@ -83,11 +83,19 @@ export default function EditableTable(props: SpecificTableProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get('search')?.toString() || ''
+  );
+  const [sortOrder, setSortOrder] = useState<SortOrder>(initialSortOrder);
+  const [sortedHeader, setSortedHeader] = useState<string | null>(null);
+  const [tableData, setTableData] = useState(data ?? []);
+
   const headers = useMemo(() => {
-    const baseHeaders = data?.length
+    const headerSource = tableData?.length ? tableData : data;
+    const baseHeaders = headerSource?.length
       ? excludedHeaders
-        ? Object.keys(data[0]).filter((key) => !excludedHeaders.includes(key))
-        : Object.keys(data[0])
+        ? Object.keys(headerSource[0]).filter((key) => !excludedHeaders.includes(key))
+        : Object.keys(headerSource[0])
       : [];
 
     if (editAction && formFields) {
@@ -99,16 +107,9 @@ export default function EditableTable(props: SpecificTableProps) {
     }
 
     return baseHeaders;
-  }, [data, excludedHeaders, editAction, formFields, editMessage, deleteAction, deleteMessage]);
+  }, [data, tableData, excludedHeaders, editAction, formFields, editMessage, deleteAction, deleteMessage]);
 
   const cellClasses = 'p-3 text-font text-base border-b border-font/20';
-
-  const [searchTerm, setSearchTerm] = useState(
-    searchParams.get('search')?.toString() || ''
-  );
-  const [sortOrder, setSortOrder] = useState<SortOrder>(initialSortOrder);
-  const [sortedHeader, setSortedHeader] = useState<string | null>(null);
-  const [tableData, setTableData] = useState(data ?? []);
 
   const [containerRef, isVisible] = useElementInViewport({
     rootMargin: '200px',
@@ -160,6 +161,12 @@ export default function EditableTable(props: SpecificTableProps) {
   const fetchData = useCallback(async () => {
     if (!moreDataToLoad || loadingRef.current) return;
 
+    // Prevent triggering a client-side fetch for the first page if we just started a search.
+    // The server-side re-render will provide the first page via the 'data' prop.
+    if (rangeStartRef.current === 0 && tableData.length === 0 && searchTerm) {
+      return;
+    }
+
     loadingRef.current = true;
     const currentRangeStart = rangeStartRef.current;
     const rangeTo = currentRangeStart + ROWS_TO_LOAD - 1;
@@ -193,7 +200,7 @@ export default function EditableTable(props: SpecificTableProps) {
     } finally {
       loadingRef.current = false;
     }
-  }, [moreDataToLoad, loadRows, sortOrder, sortedHeader, patientCategory, searchTerm]);
+  }, [moreDataToLoad, loadRows, sortOrder, sortedHeader, patientCategory, searchTerm, tableData.length]);
 
   useEffect(() => {
     if (!moreDataToLoad || !isVisible) return;
@@ -332,13 +339,13 @@ export default function EditableTable(props: SpecificTableProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredData?.map((entry, rowIndex) => {
+                {filteredData?.map((entry) => {
                   const { clickableCellHeader, clickableCellFunction } =
                     clickableCell || {};
 
                   return (
                     <tr
-                      key={rowIndex}
+                      key={entry.id}
                       className={`hover:bg-background/50 ${onClickRow ? 'cursor-pointer' : ''}`}
                       onClick={() => onClickRow?.(entry)}
                     >
@@ -401,7 +408,8 @@ export default function EditableTable(props: SpecificTableProps) {
                                 return String(entry[header]);
                               })()
                             ) : (
-                              header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
+                              header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') :
+                              header === 'birthdate' && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY') : entry[header]
                             )}
 
                             {header === editMessage && (editAction || onEditClick) ? (
