@@ -3,7 +3,7 @@ import { GoogleIcon, GoogleIconProps } from './GoogleIcon';
 export type ButtonProps = Partial<GoogleIconProps> & {
   className?: string;
   label?: string | null;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => void;
   href?: string;
   asLink?: boolean;
   type?: 'button' | 'submit' | 'reset';

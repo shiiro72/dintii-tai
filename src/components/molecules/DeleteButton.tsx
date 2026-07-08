@@ -44,7 +44,8 @@ export default function DeleteButton({
     <Button
       iconName='delete'
       {...rest}
-      onClick={() =>
+      onClick={(e) => {
+        e.stopPropagation();
         handleClick(
           <div className='flex flex-col gap-y-7'>
             <div className='text-xl text-white'>{message}</div>
@@ -66,8 +67,8 @@ export default function DeleteButton({
             </div>
           </div>,
           dialogHeadline ?? ''
-        )
-      }
+        );
+      }}
     />
   );
 }
