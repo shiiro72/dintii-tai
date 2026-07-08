@@ -103,24 +103,29 @@ export async function getPatientFields(
 
   const categoryCondition =
     category === 'adult'
-      ? `birthdate.lte.${adultDate}, birthdate.is.null`
+      ? `birthdate.lte.${adultDate},birthdate.is.null`
       : `birthdate.gt.${adultDate}`;
 
   let query = supabase
     .from(PATIENT_DATABASE)
-    .select('id, first_name, last_name, phone, email, birthdate')
+    .select('id,first_name,last_name,phone,email,birthdate')
     .or(categoryCondition);
 
   if (searchTerm) {
     const escapedSearchTerm = searchTerm.replace(/[,()]/g, (char) => `\\${char}`);
     query = query.or(
-      `first_name.ilike.%${escapedSearchTerm}%,last_name.ilike.%${escapedSearchTerm}%,phone.ilike.%${escapedSearchTerm}%,email.ilike.%${escapedSearchTerm}%`
+      `first_name.ilike.*${escapedSearchTerm}*,last_name.ilike.*${escapedSearchTerm}*,phone.ilike.*${escapedSearchTerm}*,email.ilike.*${escapedSearchTerm}*`
     );
   }
 
-  const { data } = await query
+  const { data, error } = await query
     .order(element, { ascending: ascending })
     .range(from, to);
+
+  if (error) {
+    console.error('Error fetching patients:', error);
+    return [];
+  }
 
   return data;
 }
