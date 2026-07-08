@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { getPatientFileName } from '@/helpers';
 import { createClient } from '@/supabase/server';
 import { PATIENT_FILE_BUCKET } from '@/types/GlobalTypes';
@@ -135,3 +136,41 @@ export const deleteFolder = async (folderName: string) => {
     throw errorRemoveFiles;
   }
 };
+
+export async function deleteFileAndUpdateDatabase(
+  fileName: string,
+  database: string,
+  fileType: string,
+  recordID: string,
+  revalidatePathString?: string
+) {
+  const supabase = await createClient();
+
+  const { error: storageError } = await supabase.storage
+    .from(PATIENT_FILE_BUCKET)
+    .remove([fileName]);
+
+  if (storageError) {
+    console.error(`Error deleting file: ${fileName}`, storageError);
+    throw storageError;
+  }
+
+  const { error: dbError } = await supabase
+    .from(database)
+    .update({ [fileType]: null })
+    .eq('id', recordID);
+
+  if (dbError) {
+    console.error(
+      `Error updating database for file deletion: ${recordID}`,
+      dbError
+    );
+    throw dbError;
+  }
+
+  if (revalidatePathString) {
+    revalidatePath(revalidatePathString);
+  }
+
+  return true;
+}

@@ -26,6 +26,7 @@ type EditableTableProps = {
   clickableCell?: {
     clickableCellHeader: string;
     clickableCellFunction: (rowData: { [key: string]: string }) => void;
+    deleteCellFunction?: (rowData: { [key: string]: string }) => Promise<void>;
   };
   tableHeader?: ReactNode;
   tableClassName?: string;
@@ -295,8 +296,11 @@ export default function EditableTable(props: SpecificTableProps) {
               </thead>
               <tbody>
                 {filteredData?.map((entry, rowIndex) => {
-                  const { clickableCellHeader, clickableCellFunction } =
-                    clickableCell || {};
+                  const {
+                    clickableCellHeader,
+                    clickableCellFunction,
+                    deleteCellFunction,
+                  } = clickableCell || {};
 
                   return (
                     <tr
@@ -334,37 +338,90 @@ export default function EditableTable(props: SpecificTableProps) {
                               }
                             }}
                           >
-                            {typeof entry[header] === 'boolean' ? (
-                              <GoogleIcon
-                                iconName={
-                                  entry[header]
-                                    ? 'check_box'
-                                    : 'check_box_outline_blank'
-                                }
-                                iconClassName={`${
-                                  entry[header]
-                                    ? '!text-green-700'
-                                    : '!text-red-700'
-                                } [vertical-align:bottom]`}
-                                ariaLabel={
-                                  entry[header] ? 'todo done' : 'todo not done'
-                                }
-                              />
-                            ) : useHeaderTranslationForRows.includes(header) &&
-                              entry[header] != undefined ? (
-                              (() => {
-                                const camelValue = convertSnakeToCamelCase(String(entry[header]));
-                                const categories = Object.values(t || {});
-                                for (const cat of categories) {
-                                  if (cat && typeof cat === 'object' && camelValue in cat) {
-                                    return (cat as Record<string, string>)[camelValue];
+                            <div className='flex items-center gap-x-2'>
+                              {typeof entry[header] === 'boolean' ? (
+                                <GoogleIcon
+                                  iconName={
+                                    entry[header]
+                                      ? 'check_box'
+                                      : 'check_box_outline_blank'
                                   }
-                                }
-                                return String(entry[header]);
-                              })()
-                            ) : (
-                              header.includes('time') && entry[header] ? dayjs(entry[header]).format('DD/MM/YYYY HH:mm') : entry[header]
-                            )}
+                                  iconClassName={`${
+                                    entry[header]
+                                      ? '!text-green-700'
+                                      : '!text-red-700'
+                                  } [vertical-align:bottom]`}
+                                  ariaLabel={
+                                    entry[header]
+                                      ? 'todo done'
+                                      : 'todo not done'
+                                  }
+                                />
+                              ) : useHeaderTranslationForRows.includes(
+                                  header
+                                ) && entry[header] != undefined ? (
+                                (() => {
+                                  const camelValue = convertSnakeToCamelCase(
+                                    String(entry[header])
+                                  );
+                                  const categories = Object.values(t || {});
+                                  for (const cat of categories) {
+                                    if (
+                                      cat &&
+                                      typeof cat === 'object' &&
+                                      camelValue in cat
+                                    ) {
+                                      return (cat as Record<string, string>)[
+                                        camelValue
+                                      ];
+                                    }
+                                  }
+                                  return String(entry[header]);
+                                })()
+                              ) : header.includes('time') && entry[header] ? (
+                                dayjs(entry[header]).format('DD/MM/YYYY HH:mm')
+                              ) : (
+                                entry[header]
+                              )}
+                              {clickableCellHeader === header &&
+                                deleteCellFunction &&
+                                entry[header] && (
+                                  <DeleteButton
+                                    deleteAction={async () => {
+                                      await deleteCellFunction(entry);
+                                    }}
+                                    message={replaceEntry(
+                                      dictionary?.feedback
+                                        ?.deleteTreatmentMessage || '',
+                                      (() => {
+                                        const camelHeader =
+                                          convertSnakeToCamelCase(header);
+                                        const categories = Object.values(
+                                          dictionary || {}
+                                        );
+                                        for (const cat of categories) {
+                                          if (
+                                            cat &&
+                                            typeof cat === 'object' &&
+                                            camelHeader in cat
+                                          ) {
+                                            return (
+                                              cat as Record<string, string>
+                                            )[camelHeader];
+                                          }
+                                        }
+                                        return header;
+                                      })()
+                                    )}
+                                    dialogHeadline={
+                                      dictionary?.edit?.deleteTreatment || ''
+                                    }
+                                    asLink
+                                    className='!p-0'
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                )}
+                            </div>
 
                             {header === editMessage && (editAction || onEditClick) ? (
                               onEditClick ? (

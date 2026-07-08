@@ -3,12 +3,20 @@
 import { PatientType } from '@/types/PatientType';
 import { useDictionary } from '../../providers/DictionaryProvider';
 import ProfileField from './ProfileField';
-import { getPatientFileName, getWhatsAppLink } from '@/helpers';
+import { getPatientFileName, getWhatsAppLink, replaceEntry } from '@/helpers';
 import { useCallback, useEffect, useState } from 'react';
-import { getPatientFileURL } from '@/supabase/actions/bucketActions';
+import {
+  deleteFileAndUpdateDatabase,
+  getPatientFileURL,
+} from '@/supabase/actions/bucketActions';
 import { EditPatientForm } from '@/components/molecules/EditForm';
 import { DeletePatientButton } from '@/components/molecules/DeleteButton';
-import { GDPR_FILENAME, PATIENT_FILE_NAME } from '@/types/GlobalTypes';
+import {
+  GDPR_FILENAME,
+  PATIENT_DATABASE,
+  PATIENT_FILE_NAME,
+  PATIENTS_PATH,
+} from '@/types/GlobalTypes';
 
 export type ProfileOverviewProps = {
   patient: NonNullable<PatientType>;
@@ -75,6 +83,28 @@ export default function ProfileOverview({
     getGdprFile();
   }, [getPatientFile, getGdprFile]);
 
+  const handleDeleteFile = async (
+    fileName: string,
+    fileType: string,
+    isGdpr = false
+  ) => {
+    if (!patient?.id) return;
+
+    await deleteFileAndUpdateDatabase(
+      fileName,
+      PATIENT_DATABASE,
+      fileType,
+      patient.id.toString(),
+      `${PATIENTS_PATH}/${patient.id}`
+    );
+
+    if (isGdpr) {
+      setGdprDocumentURL(null);
+    } else {
+      setDocumentURL(null);
+    }
+  };
+
   const fieldValues = [
     { label: firstName, value: patient?.first_name },
     { label: lastName, value: patient?.last_name },
@@ -103,6 +133,12 @@ export default function ProfileOverview({
             return;
           }
         : undefined,
+      onDelete: async () => handleDeleteFile(filePath, 'patient_file_id'),
+      deleteMessage: replaceEntry(
+        dictionary?.feedback?.deleteTreatmentMessage || '',
+        patientFile || ''
+      ),
+      dialogHeadline: dictionary?.edit?.deletePatient || '',
     },
     {
       label: gdpr,
@@ -114,20 +150,31 @@ export default function ProfileOverview({
             return;
           }
         : undefined,
+      onDelete: async () => handleDeleteFile(gdprFilePath, 'gdpr_file_id', true),
+      deleteMessage: replaceEntry(
+        dictionary?.feedback?.deleteTreatmentMessage || '',
+        gdpr || ''
+      ),
+      dialogHeadline: dictionary?.edit?.deletePatient || '',
     },
   ];
 
   return (
     <div className='flex flex-col gap-y-2 md:flex-row md:gap-x-2'>
       <div className='bg-background flex flex-2/3 flex-col gap-y-2 rounded-lg p-5 md:p-10'>
-        {fieldValues.map(({ label, value, link }, index) => (
-          <ProfileField
-            key={`${label}-${index}`}
-            label={label ?? ''}
-            value={value}
-            link={link}
-          />
-        ))}
+        {fieldValues.map(
+          ({ label, value, link, onDelete, deleteMessage, dialogHeadline }, index) => (
+            <ProfileField
+              key={`${label}-${index}`}
+              label={label ?? ''}
+              value={value}
+              link={link}
+              onDelete={onDelete}
+              deleteMessage={deleteMessage}
+              dialogHeadline={dialogHeadline}
+            />
+          )
+        )}
       </div>
       <div className='bg-background flex flex-1/3 flex-col gap-y-3 rounded-lg p-5 md:p-10'>
         {editAction && (

@@ -10,7 +10,11 @@ import {
 } from '@/supabase/actions/treatmentActions';
 import { LoadRowsFunction, SupabaseArray } from '@/types/GeneralTypes';
 import { getPatientFileName, getTreatmentConsentFileName } from '@/helpers';
-import { getPatientFileURL } from '@/supabase/actions/bucketActions';
+import {
+  deleteFileAndUpdateDatabase,
+  getPatientFileURL,
+} from '@/supabase/actions/bucketActions';
+import { PATIENTS_PATH, TREATMENT_DATABASE } from '@/types/GlobalTypes';
 
 export type TreatmentsOverviewProps = {
   data: SupabaseArray;
@@ -38,6 +42,21 @@ export default function TreatmentsOverview({
     const documentURL = await getPatientFileURL(filePath);
 
     return documentURL;
+  };
+
+  const deleteConsentFile = async (treatmentID: string) => {
+    const fileName = getPatientFileName(
+      patientID.toString(),
+      getTreatmentConsentFileName(treatmentID)
+    );
+
+    await deleteFileAndUpdateDatabase(
+      fileName,
+      TREATMENT_DATABASE,
+      'consent_file',
+      treatmentID,
+      `${PATIENTS_PATH}/${patientID}`
+    );
   };
 
   const formFields = [
@@ -87,6 +106,9 @@ export default function TreatmentsOverview({
           const link = await getConsentFile(rowData.id.toString());
 
           if (link) open(link);
+        },
+        deleteCellFunction: async (rowData) => {
+          await deleteConsentFile(rowData.id.toString());
         },
       }}
       useHeaderTranslationForRows={['consent_file']}
