@@ -21,4 +21,4 @@ export const TREATMENT_DATABASE = 'treatment';
 export const TODO_LIST_DATABASE = 'todo_list';
 export const APPOINTMENT_DATABASE = 'appointments';
 
-export const ROWS_TO_LOAD = 15;
+export const ROWS_TO_LOAD = 25;

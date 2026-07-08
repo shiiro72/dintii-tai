@@ -108,7 +108,7 @@ export async function getPatientFields(
 
   let query = supabase
     .from(PATIENT_DATABASE)
-    .select('id, first_name, last_name, phone, email, birthdate')
+    .select('id,first_name,last_name,phone,email,birthdate')
     .or(categoryCondition);
 
   if (searchTerm) {

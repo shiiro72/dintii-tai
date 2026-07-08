@@ -110,7 +110,9 @@ export default function EditableTable(props: SpecificTableProps) {
   const [sortedHeader, setSortedHeader] = useState<string | null>(null);
   const [tableData, setTableData] = useState(data ?? []);
 
-  const [containerRef, isVisible] = useElementInViewport();
+  const [containerRef, isVisible] = useElementInViewport({
+    rootMargin: '200px',
+  });
 
   const rangeStartRef = useRef(data?.length ?? ROWS_TO_LOAD);
   const loadingRef = useRef(false);
