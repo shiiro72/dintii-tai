@@ -350,7 +350,7 @@ export default function EditableTable(props: SpecificTableProps) {
                                     entry[header]
                                       ? '!text-green-700'
                                       : '!text-red-700'
-                                  } [vertical-align:bottom]`}
+                                    } [vertical-align:middle]`}
                                   ariaLabel={
                                     entry[header]
                                       ? 'todo done'
@@ -377,6 +377,26 @@ export default function EditableTable(props: SpecificTableProps) {
                                     }
                                   }
                                   return String(entry[header]);
+                                })()
+                              ) : clickableCellHeader === header &&
+                                entry[header] &&
+                                entry[header] !== '' ? (
+                                (() => {
+                                  const camelHeader =
+                                    convertSnakeToCamelCase(header);
+                                  const categories = Object.values(t || {});
+                                  for (const cat of categories) {
+                                    if (
+                                      cat &&
+                                      typeof cat === 'object' &&
+                                      camelHeader in cat
+                                    ) {
+                                      return (cat as Record<string, string>)[
+                                        camelHeader
+                                      ];
+                                    }
+                                  }
+                                  return header;
                                 })()
                               ) : header.includes('time') && entry[header] ? (
                                 dayjs(entry[header]).format('DD/MM/YYYY HH:mm')
@@ -418,6 +438,7 @@ export default function EditableTable(props: SpecificTableProps) {
                                     }
                                     asLink
                                     className='!p-0'
+                                    iconClassName='!text-lg'
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                 )}
